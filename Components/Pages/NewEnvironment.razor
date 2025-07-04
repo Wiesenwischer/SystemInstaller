@@ -1,0 +1,43 @@
+@page "/environments/new"
+@using SystemInstaller.Web.Data
+@inject NavigationManager Navigation
+@inject InstallationService InstallationService
+@rendermode InteractiveServer
+
+<h3>Neue Umgebung anlegen</h3>
+
+<EditForm Model="environment" OnValidSubmit="CreateEnvironment">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <InputText id="name" class="form-control" @bind-Value="environment.Name" />
+    </div>
+    <div class="mb-3">
+        <label for="desc" class="form-label">Beschreibung</label>
+        <InputTextArea id="desc" class="form-control" @bind-Value="environment.Description" @onchange="OnDescriptionChanged" />
+        <small class="text-muted">Aktueller Wert: "@environment.Description"</small>
+    </div>
+    <button type="submit" class="btn btn-primary">Anlegen</button>
+</EditForm>
+
+@code {
+    private InstallationEnvironment environment = new();
+
+    private void OnDescriptionChanged(ChangeEventArgs e)
+    {
+        environment.Description = e.Value?.ToString();
+        Console.WriteLine($"Description changed to: '{environment.Description}'");
+    }
+
+    private async Task CreateEnvironment()
+    {
+        // Debug: Lass uns sehen, was tatsächlich gesendet wird
+        Console.WriteLine($"Name: '{environment.Name}'");
+        Console.WriteLine($"Description: '{environment.Description}'");
+        Console.WriteLine($"Description is null: {environment.Description == null}");
+        
+        await InstallationService.AddEnvironmentAsync(environment);
+        Navigation.NavigateTo("/installations");
+    }
+}

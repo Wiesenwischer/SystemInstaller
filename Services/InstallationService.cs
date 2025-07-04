@@ -2,19 +2,31 @@ using SystemInstaller.Web.Data;
 
 namespace SystemInstaller.Web.Services;
 
+using Microsoft.EntityFrameworkCore;
 public class InstallationService
 {
     private readonly List<InstallationTask> _tasks = new();
     private readonly AgentApiClient _agentApiClient;
     private readonly ILogger<InstallationService> _logger;
+    private readonly SystemInstallerDbContext _db;
 
-    public InstallationService(AgentApiClient agentApiClient, ILogger<InstallationService> logger)
+    public InstallationService(AgentApiClient agentApiClient, ILogger<InstallationService> logger, SystemInstallerDbContext db)
     {
         _agentApiClient = agentApiClient;
         _logger = logger;
+        _db = db;
+        // SeedSampleData(); // Optional: Entfernen oder anpassen
+    }
 
-        // Add some sample data for demonstration
-        SeedSampleData();
+    public async Task<List<InstallationEnvironment>> GetEnvironmentsAsync()
+    {
+        return await _db.Environments.AsNoTracking().ToListAsync();
+    }
+
+    public async Task AddEnvironmentAsync(InstallationEnvironment env)
+    {
+        _db.Environments.Add(env);
+        await _db.SaveChangesAsync();
     }
 
     public event EventHandler<InstallationTask>? TaskUpdated;

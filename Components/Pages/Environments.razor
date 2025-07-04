@@ -1,0 +1,47 @@
+@page "/environments"
+@using SystemInstaller.Web.Data
+@inject InstallationService InstallationService
+
+<h3>Umgebungen</h3>
+
+@if (environments == null)
+{
+    <p>Lade Umgebungen...</p>
+}
+else if (!environments.Any())
+{
+    <p>Keine Umgebungen vorhanden.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Beschreibung</th>
+                <th>Anzahl Tasks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var env in environments)
+            {
+                <tr>
+                    <td>@env.Name</td>
+                    <td>@env.Description</td>
+                    <td>@env.Tasks?.Count ?? 0</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a class="btn btn-primary" href="/environments/new">Neue Umgebung anlegen</a>
+
+@code {
+    private List<InstallationEnvironment> environments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        environments = await InstallationService.GetEnvironmentsAsync();
+    }
+}
