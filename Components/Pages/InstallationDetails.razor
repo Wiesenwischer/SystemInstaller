@@ -1,0 +1,320 @@
+@page "/installations/{TaskId:guid}"
+@using SystemInstaller.Web.Services
+@using SystemInstaller.Web.Data
+@inject InstallationService InstallationService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>Installation Details</PageTitle>
+
+@if (task != null)
+{
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/installations">Installations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@task.Name</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1>@task.Name</h1>
+                    <p class="text-muted">@task.Description</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge @GetStatusBadgeClass(task.Status) fs-6 mb-2">@task.Status</span>
+                    <br>
+                    <small class="text-muted">Created: @task.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Installation Logs -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Installation Logs</h5>
+                    <div class="d-flex gap-2">
+                        @if (task.Status == InstallationStatus.Pending)
+                        {
+                            <button class="btn btn-success btn-sm" @onclick="StartInstallation">
+                                <i class="fas fa-play"></i> Start Installation
+                            </button>
+                        }
+                        @if (task.Status == InstallationStatus.Running)
+                        {
+                            <button class="btn btn-warning btn-sm" @onclick="CancelInstallation">
+                                <i class="fas fa-stop"></i> Cancel Installation
+                            </button>
+                        }
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshLogs">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (task.Logs.Any())
+                    {
+                        <div class="logs-container" style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa; padding: 1rem; border-radius: 0.25rem; font-family: 'Courier New', monospace; font-size: 0.875rem;">
+                            @foreach (var log in task.Logs)
+                            {
+                                <div class="log-entry">@log</div>
+                            }
+                        </div>
+                        @if (task.Status == InstallationStatus.Running)
+                        {
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-sync fa-spin"></i> Installation is running...
+                                </small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-file-alt fa-2x mb-2"></i>
+                            <p>No logs available yet. Start the installation to see progress.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(task.ErrorMessage))
+            {
+                <!-- Error Details -->
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle"></i> Error Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger">
+                            @task.ErrorMessage
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <!-- Task Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Task Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Task ID:</dt>
+                        <dd class="col-sm-7"><code>@task.Id</code></dd>
+
+                        <dt class="col-sm-5">Environment:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-secondary">@task.Environment</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Status:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge @GetStatusBadgeClass(task.Status)">@task.Status</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Progress:</dt>
+                        <dd class="col-sm-7">
+                            <div class="progress mb-1">
+                                <div class="progress-bar @GetProgressBarClass(task.Status)" 
+                                     role="progressbar" 
+                                     style="width: @task.Progress%"
+                                     aria-valuenow="@task.Progress" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <small class="text-muted">@task.Progress%</small>
+                        </dd>
+
+                        <dt class="col-sm-5">Created:</dt>
+                        <dd class="col-sm-7">@task.CreatedAt.ToString("MMM dd, yyyy HH:mm:ss")</dd>
+
+                        @if (task.StartedAt.HasValue)
+                        {
+                            <dt class="col-sm-5">Started:</dt>
+                            <dd class="col-sm-7">@task.StartedAt.Value.ToString("MMM dd, yyyy HH:mm:ss")</dd>
+                        }
+
+                        @if (task.CompletedAt.HasValue)
+                        {
+                            <dt class="col-sm-5">Completed:</dt>
+                            <dd class="col-sm-7">@task.CompletedAt.Value.ToString("MMM dd, yyyy HH:mm:ss")</dd>
+
+                            @if (task.StartedAt.HasValue)
+                            {
+                                var duration = task.CompletedAt.Value - task.StartedAt.Value;
+                                <dt class="col-sm-5">Duration:</dt>
+                                <dd class="col-sm-7">@duration.ToString(@"hh\:mm\:ss")</dd>
+                            }
+                        }
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/installations" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left"></i> Back to All Tasks
+                        </a>
+                        
+                        @if (task.Status == InstallationStatus.Failed || task.Status == InstallationStatus.Completed)
+                        {
+                            <button class="btn btn-outline-secondary" @onclick="CreateSimilarTask">
+                                <i class="fas fa-copy"></i> Create Similar Task
+                            </button>
+                        }
+                        
+                        <button class="btn btn-outline-info" @onclick="ExportLogs">
+                            <i class="fas fa-download"></i> Export Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <h5 class="text-muted">Installation task not found</h5>
+                    <p class="text-muted">The requested installation task could not be found.</p>
+                    <a href="/installations" class="btn btn-primary">Back to All Tasks</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid TaskId { get; set; }
+    
+    private InstallationTask? task;
+
+    protected override void OnInitialized()
+    {
+        InstallationService.TaskUpdated += OnTaskUpdated;
+        LoadTask();
+    }
+
+    protected override void OnParametersSet()
+    {
+        LoadTask();
+    }
+
+    private void LoadTask()
+    {
+        task = InstallationService.GetTask(TaskId);
+    }
+
+    private void OnTaskUpdated(object? sender, InstallationTask updatedTask)
+    {
+        if (updatedTask.Id == TaskId)
+        {
+            InvokeAsync(() =>
+            {
+                LoadTask();
+                StateHasChanged();
+            });
+        }
+    }
+
+    private async Task StartInstallation()
+    {
+        if (task != null)
+        {
+            await InstallationService.StartInstallationAsync(task.Id);
+        }
+    }
+
+    private async Task CancelInstallation()
+    {
+        if (task != null)
+        {
+            await InstallationService.CancelInstallationAsync(task.Id);
+        }
+    }
+
+    private void RefreshLogs()
+    {
+        LoadTask();
+        StateHasChanged();
+    }
+
+    private async Task CreateSimilarTask()
+    {
+        if (task != null)
+        {
+            var newTask = await InstallationService.CreateTaskAsync(
+                $"{task.Name} (Copy)",
+                task.Description,
+                task.Environment
+            );
+            Navigation.NavigateTo($"/installations/{newTask.Id}");
+        }
+    }
+
+    private void ExportLogs()
+    {
+        // This would typically download the logs as a file
+        // For now, we'll just copy to clipboard or show in a new window
+        if (task != null && task.Logs.Any())
+        {
+            var logsText = string.Join("\n", task.Logs);
+            // In a real implementation, you'd trigger a file download
+            Console.WriteLine("Exporting logs...");
+        }
+    }
+
+    private string GetStatusBadgeClass(InstallationStatus status)
+    {
+        return status switch
+        {
+            InstallationStatus.Pending => "bg-secondary",
+            InstallationStatus.Running => "bg-warning",
+            InstallationStatus.Completed => "bg-success",
+            InstallationStatus.Failed => "bg-danger",
+            InstallationStatus.Cancelled => "bg-dark",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetProgressBarClass(InstallationStatus status)
+    {
+        return status switch
+        {
+            InstallationStatus.Running => "bg-warning",
+            InstallationStatus.Completed => "bg-success",
+            InstallationStatus.Failed => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    public void Dispose()
+    {
+        InstallationService.TaskUpdated -= OnTaskUpdated;
+    }
+}
