@@ -1,0 +1,250 @@
+@page "/installations"
+@using SystemInstaller.Web.Services
+@using SystemInstaller.Web.Data
+@inject InstallationService InstallationService
+@inject AgentApiClient AgentApiClient
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>Installation Tasks</PageTitle>
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Installation Tasks</h1>
+            <button class="btn btn-primary" @onclick="ShowCreateModal">
+                <i class="fas fa-plus"></i> Create New Task
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        @if (tasks.Any())
+        {
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Environment</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var task in tasks)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@task.Name</strong>
+                                        </td>
+                                        <td class="text-muted">@task.Description</td>
+                                        <td>
+                                            <span class="badge bg-secondary">@task.Environment</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge @GetStatusBadgeClass(task.Status)">
+                                                @task.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="width: 100px;">
+                                                <div class="progress-bar @GetProgressBarClass(task.Status)" 
+                                                     role="progressbar" 
+                                                     style="width: @task.Progress%"
+                                                     aria-valuenow="@task.Progress" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">@task.Progress%</small>
+                                        </td>
+                                        <td>@task.CreatedAt.ToString("MMM dd, HH:mm")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="/installations/@task.Id" class="btn btn-sm btn-outline-primary">
+                                                    Details
+                                                </a>
+                                                @if (task.Status == InstallationStatus.Pending)
+                                                {
+                                                    <button class="btn btn-sm btn-success" @onclick="() => StartInstallation(task.Id)">
+                                                        Start
+                                                    </button>
+                                                }
+                                                @if (task.Status == InstallationStatus.Running)
+                                                {
+                                                    <button class="btn btn-sm btn-warning" @onclick="() => CancelInstallation(task.Id)">
+                                                        Cancel
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <h5 class="text-muted">No installation tasks yet</h5>
+                    <p class="text-muted">Create your first installation task to get started with environment deployments.</p>
+                    <button class="btn btn-primary" @onclick="ShowCreateModal">
+                        <i class="fas fa-plus"></i> Create Your First Task
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Create Task Modal -->
+@if (showCreateModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Installation Task</h5>
+                    <button type="button" class="btn-close" @onclick="HideCreateModal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="taskName" class="form-label">Task Name</label>
+                            <input type="text" class="form-control" id="taskName" @bind="newTaskName" placeholder="Enter task name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="taskDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="taskDescription" rows="3" @bind="newTaskDescription" placeholder="Describe what this installation will do"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="taskEnvironment" class="form-label">Environment</label>
+                            <select class="form-select" id="taskEnvironment" @bind="newTaskEnvironment">
+                                <option value="">Select environment...</option>
+                                @foreach (var env in availableEnvironments)
+                                {
+                                    <option value="@env">@env</option>
+                                }
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideCreateModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="CreateTask" disabled="@(!CanCreateTask())">
+                        Create Task
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<InstallationTask> tasks = new();
+    private string[] availableEnvironments = Array.Empty<string>();
+    private bool showCreateModal = false;
+    private string newTaskName = string.Empty;
+    private string newTaskDescription = string.Empty;
+    private string newTaskEnvironment = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        InstallationService.TaskUpdated += OnTaskUpdated;
+        LoadTasks();
+        availableEnvironments = await AgentApiClient.GetAvailableEnvironmentsAsync();
+    }
+
+    private void LoadTasks()
+    {
+        tasks = InstallationService.GetAllTasks().ToList();
+    }
+
+    private void OnTaskUpdated(object? sender, InstallationTask task)
+    {
+        InvokeAsync(() =>
+        {
+            LoadTasks();
+            StateHasChanged();
+        });
+    }
+
+    private void ShowCreateModal()
+    {
+        showCreateModal = true;
+        newTaskName = string.Empty;
+        newTaskDescription = string.Empty;
+        newTaskEnvironment = string.Empty;
+    }
+
+    private void HideCreateModal()
+    {
+        showCreateModal = false;
+    }
+
+    private bool CanCreateTask()
+    {
+        return !string.IsNullOrWhiteSpace(newTaskName) && 
+               !string.IsNullOrWhiteSpace(newTaskEnvironment);
+    }
+
+    private async Task CreateTask()
+    {
+        if (!CanCreateTask()) return;
+
+        var task = await InstallationService.CreateTaskAsync(newTaskName, newTaskDescription, newTaskEnvironment);
+        HideCreateModal();
+        Navigation.NavigateTo($"/installations/{task.Id}");
+    }
+
+    private async Task StartInstallation(Guid taskId)
+    {
+        await InstallationService.StartInstallationAsync(taskId);
+    }
+
+    private async Task CancelInstallation(Guid taskId)
+    {
+        await InstallationService.CancelInstallationAsync(taskId);
+    }
+
+    private string GetStatusBadgeClass(InstallationStatus status)
+    {
+        return status switch
+        {
+            InstallationStatus.Pending => "bg-secondary",
+            InstallationStatus.Running => "bg-warning",
+            InstallationStatus.Completed => "bg-success",
+            InstallationStatus.Failed => "bg-danger",
+            InstallationStatus.Cancelled => "bg-dark",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetProgressBarClass(InstallationStatus status)
+    {
+        return status switch
+        {
+            InstallationStatus.Running => "bg-warning",
+            InstallationStatus.Completed => "bg-success",
+            InstallationStatus.Failed => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    public void Dispose()
+    {
+        InstallationService.TaskUpdated -= OnTaskUpdated;
+    }
+}
