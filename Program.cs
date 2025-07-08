@@ -58,6 +58,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // Legacy services (to be migrated gradually)
+builder.Services.AddHttpClient<SystemInstaller.Web.Services.AgentApiClient>();
 builder.Services.AddScoped<SystemInstaller.Web.Services.TenantService>();
 builder.Services.AddScoped<SystemInstaller.Web.Services.InvitationService>();
 builder.Services.AddScoped<SystemInstaller.Web.Services.InstallationService>();

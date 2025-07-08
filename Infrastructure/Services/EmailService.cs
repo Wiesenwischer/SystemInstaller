@@ -1,12 +1,6 @@
-using SystemInstaller.Domain.Services;
+using SystemInstaller.Application.Interfaces;
 
 namespace SystemInstaller.Infrastructure.Services;
-
-public interface IEmailService
-{
-    Task SendInvitationEmailAsync(string email, string tenantName, string invitationToken);
-    Task SendWelcomeEmailAsync(string email, string tenantName);
-}
 
 public class EmailService : IEmailService
 {
