@@ -1,9 +1,10 @@
 using SystemInstaller.Web.Components;
 using SystemInstaller.Web.Services;
-
-
 using Microsoft.EntityFrameworkCore;
 using SystemInstaller.Web.Data;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,47 @@ builder.Services.AddRazorComponents()
 // Entity Framework DbContext mit SQL Server
 builder.Services.AddDbContext<SystemInstallerDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+{
+    var keycloakConfig = builder.Configuration.GetSection("Authentication:Keycloak");
+    
+    options.Authority = keycloakConfig["Authority"];
+    options.ClientId = keycloakConfig["ClientId"];
+    options.ClientSecret = keycloakConfig["ClientSecret"];
+    options.ResponseType = keycloakConfig["ResponseType"] ?? "code";
+    options.RequireHttpsMetadata = keycloakConfig.GetValue<bool>("RequireHttpsMetadata");
+    
+    options.Scope.Clear();
+    options.Scope.Add("openid");
+    options.Scope.Add("profile");
+    options.Scope.Add("email");
+    
+    options.GetClaimsFromUserInfoEndpoint = true;
+    options.SaveTokens = true;
+    
+    options.Events = new OpenIdConnectEvents
+    {
+        OnRedirectToIdentityProviderForSignOut = context =>
+        {
+            var logoutUri = keycloakConfig["Authority"] + "/protocol/openid-connect/logout?client_id=" + 
+                           keycloakConfig["ClientId"] + "&post_logout_redirect_uri=" + 
+                           Uri.EscapeDataString(context.Request.Scheme + "://" + context.Request.Host);
+            context.Response.Redirect(logoutUri);
+            context.HandleResponse();
+            return Task.CompletedTask;
+        }
+    };
+});
+
+builder.Services.AddAuthorization();
 
 // Register custom services
 builder.Services.AddHttpClient<AgentApiClient>();
@@ -67,11 +109,27 @@ else
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode()
+    .RequireAuthorization(); // Requires authentication for all pages
+
+// Add login/logout endpoints
+app.MapGet("/login", async (HttpContext context) =>
+{
+    await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
+});
+
+app.MapPost("/logout", async (HttpContext context) =>
+{
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+});
 
 app.Run();

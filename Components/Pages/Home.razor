@@ -7,12 +7,14 @@
 
 <PageTitle>System Installer - Dashboard</PageTitle>
 
-<div class="row">
-    <div class="col-12">
-        <h1>System Installer Dashboard</h1>
-        <p class="lead">Manage your Docker environment installations from this central dashboard.</p>
-    </div>
-</div>
+<AuthorizeView>
+    <Authorized>
+        <div class="row">
+            <div class="col-12">
+                <h1>System Installer Dashboard</h1>
+                <p class="lead">Manage your Docker environment installations from this central dashboard.</p>
+            </div>
+        </div>
 
 <div class="row mb-4">
     <div class="col-md-3">
@@ -159,3 +161,15 @@
         InstallationService.TaskUpdated -= OnTaskUpdated;
     }
 }
+    </Authorized>
+    <NotAuthorized>
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 text-center">
+                <h1>System Installer</h1>
+                <p class="lead">Willkommen beim System Installer Dashboard</p>
+                <p>Bitte melden Sie sich an, um auf das Dashboard zuzugreifen.</p>
+                <a href="/login" class="btn btn-primary">Anmelden</a>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>

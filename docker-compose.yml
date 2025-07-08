@@ -16,16 +16,43 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: systeminstaller-keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin123
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_HTTP_ENABLED=true
+      - KC_HEALTH_ENABLED=true
+    ports:
+      - "8080:8080"
+    networks:
+      - systeminstaller-net
+    command: start-dev
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   web:
     build: .
     container_name: systeminstaller-web
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=db;Database=SystemInstallerDb;User=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;
+      - Authentication__Keycloak__Authority=http://keycloak:8080/realms/systeminstaller
+      - Authentication__Keycloak__ClientId=systeminstaller-web
+      - Authentication__Keycloak__ClientSecret=your-client-secret
     ports:
       - "8081:8080"
     depends_on:
       db:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     networks:
       - systeminstaller-net
