@@ -56,4 +56,26 @@ public class InstallationTaskRepository : IInstallationTaskRepository
     {
         return await _context.Tasks.AnyAsync(t => t.Id == id);
     }
+
+    public async Task<IEnumerable<InstallationTask>> GetAllAsync()
+    {
+        return await _context.Tasks
+            .Include(t => t.Environment)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<InstallationTask>> GetByStatusAsync(Domain.ValueObjects.InstallationStatus status)
+    {
+        return await _context.Tasks
+            .Include(t => t.Environment)
+            .Where(t => t.Status == status)
+            .ToListAsync();
+    }
+
+    public async Task AddAsync(InstallationTask task)
+    {
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+    }
 }

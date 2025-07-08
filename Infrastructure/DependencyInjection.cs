@@ -30,6 +30,8 @@ public static class DependencyInjection
 
         // Legacy Adapters (for gradual migration)
         services.AddScoped<LegacyTenantServiceAdapter>();
+        services.AddScoped<LegacyInvitationServiceAdapter>();
+        services.AddScoped<LegacyInstallationServiceAdapter>();
 
         return services;
     }
@@ -42,6 +44,7 @@ public static class DependencyInjection
         // Application Services
         services.AddScoped<ITenantApplicationService, TenantApplicationService>();
         services.AddScoped<IUserInvitationApplicationService, UserInvitationApplicationService>();
+        services.AddScoped<IInstallationApplicationService, InstallationApplicationService>();
 
         return services;
     }

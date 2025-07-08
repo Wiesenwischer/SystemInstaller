@@ -75,12 +75,17 @@ public class InstallationTask
         Progress = 0;
     }
     
-    public void UpdateProgress(int progress)
+    public void UpdateProgress(int progress, string? logMessage = null)
     {
         if (progress < 0 || progress > 100)
             throw new ArgumentException("Progress must be between 0 and 100", nameof(progress));
         
         Progress = progress;
+        
+        if (!string.IsNullOrWhiteSpace(logMessage))
+        {
+            AddLog(logMessage);
+        }
     }
     
     public void Complete()

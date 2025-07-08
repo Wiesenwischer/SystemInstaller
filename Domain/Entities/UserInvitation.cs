@@ -71,4 +71,9 @@ public class UserInvitation
         
         Role = role;
     }
+
+    public void MarkAsUsed()
+    {
+        Use();
+    }
 }

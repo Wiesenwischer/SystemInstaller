@@ -58,4 +58,10 @@ public class InstallationEnvironmentRepository : IInstallationEnvironmentReposit
     {
         return await _context.Environments.AnyAsync(e => e.Id == id);
     }
+
+    public async Task AddAsync(InstallationEnvironment environment)
+    {
+        _context.Environments.Add(environment);
+        await _context.SaveChangesAsync();
+    }
 }

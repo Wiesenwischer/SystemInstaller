@@ -68,4 +68,24 @@ public class TenantUserRepository : ITenantUserRepository
     {
         return await _context.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId);
     }
+
+    public async Task<TenantUser?> GetByTenantAndUserIdAsync(Guid tenantId, string userId)
+    {
+        return await _context.TenantUsers
+            .Include(tu => tu.Tenant)
+            .FirstOrDefaultAsync(tu => tu.TenantId == tenantId && tu.UserId == userId);
+    }
+
+    public async Task<TenantUser?> GetByTenantAndEmailAsync(Guid tenantId, string email)
+    {
+        return await _context.TenantUsers
+            .Include(tu => tu.Tenant)
+            .FirstOrDefaultAsync(tu => tu.TenantId == tenantId && tu.Email.Value == email);
+    }
+
+    public async Task AddAsync(TenantUser tenantUser)
+    {
+        _context.TenantUsers.Add(tenantUser);
+        await _context.SaveChangesAsync();
+    }
 }
