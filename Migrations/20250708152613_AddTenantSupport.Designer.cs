@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SystemInstaller.Web.Data;
 
@@ -11,9 +12,11 @@ using SystemInstaller.Web.Data;
 namespace SystemInstaller.Web.Migrations
 {
     [DbContext(typeof(SystemInstallerDbContext))]
-    partial class SystemInstallerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250708152613_AddTenantSupport")]
+    partial class AddTenantSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

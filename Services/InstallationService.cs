@@ -41,17 +41,17 @@ public class InstallationService
         return _tasks.FirstOrDefault(t => t.Id == id);
     }
 
-    public async Task<InstallationTask> CreateTaskAsync(string name, string description, string environment)
+    public async Task<InstallationTask> CreateTaskAsync(string name, string description, Guid environmentId)
     {
         var task = new InstallationTask
         {
             Name = name,
             Description = description,
-            Environment = environment
+            EnvironmentId = environmentId
         };
 
         _tasks.Add(task);
-        _logger.LogInformation("Created new installation task {TaskId} for environment {Environment}", task.Id, environment);
+        _logger.LogInformation("Created new installation task {TaskId} for environment {EnvironmentId}", task.Id, environmentId);
 
         TaskUpdated?.Invoke(this, task);
         return await Task.FromResult(task);
@@ -67,7 +67,7 @@ public class InstallationService
 
         try
         {
-            var success = await _agentApiClient.StartInstallationAsync(taskId, task.Environment);
+            var success = await _agentApiClient.StartInstallationAsync(taskId, task.EnvironmentId.ToString());
             if (success)
             {
                 task.Status = InstallationStatus.Running;
@@ -194,7 +194,7 @@ public class InstallationService
             {
                 Name = "Development Environment Setup",
                 Description = "Setting up development environment with Docker containers",
-                Environment = "Development",
+                EnvironmentId = Guid.NewGuid(), // Placeholder - in real app this would be a valid environment ID
                 Status = InstallationStatus.Completed,
                 CreatedAt = DateTime.UtcNow.AddHours(-2),
                 StartedAt = DateTime.UtcNow.AddHours(-2).AddMinutes(5),
@@ -212,7 +212,7 @@ public class InstallationService
             {
                 Name = "Testing Environment Refresh",
                 Description = "Updating testing environment with latest configurations",
-                Environment = "Testing",
+                EnvironmentId = Guid.NewGuid(), // Placeholder - in real app this would be a valid environment ID
                 Status = InstallationStatus.Failed,
                 CreatedAt = DateTime.UtcNow.AddMinutes(-30),
                 StartedAt = DateTime.UtcNow.AddMinutes(-25),

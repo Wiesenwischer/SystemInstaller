@@ -36,6 +36,16 @@
                         <span class="bi bi-layers-fill-nav-menu" aria-hidden="true"></span> Umgebungen
                     </NavLink>
                 </div>
+                
+                <AuthorizeView Roles="admin">
+                    <Authorized Context="adminContext">
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="tenants">
+                                <span class="bi bi-building-fill-nav-menu" aria-hidden="true"></span> Tenants
+                            </NavLink>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
             </Authorized>
             <NotAuthorized>
                 <div class="nav-item px-3">

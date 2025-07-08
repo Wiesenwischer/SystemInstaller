@@ -2,12 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SystemInstaller.Web.Data
 {
-    public class InstallationEnvironment
+    public class Tenant
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        
-        [Required]
-        public Guid TenantId { get; set; }
         
         [Required]
         [StringLength(100)]
@@ -16,13 +13,18 @@ namespace SystemInstaller.Web.Data
         [StringLength(500)]
         public string? Description { get; set; }
         
+        [Required]
+        [StringLength(100)]
+        public string ContactEmail { get; set; } = string.Empty;
+        
+        public bool IsActive { get; set; } = true;
+        
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
         public DateTime? UpdatedAt { get; set; }
         
         // Navigation Properties
-        public Tenant Tenant { get; set; } = null!;
-        public List<InstallationTask> Tasks { get; set; } = new();
-        // Weitere Eigenschaften wie Docker Compose Pfad, Variablen etc. können ergänzt werden
+        public List<TenantUser> TenantUsers { get; set; } = new();
+        public List<InstallationEnvironment> Environments { get; set; } = new();
     }
 }

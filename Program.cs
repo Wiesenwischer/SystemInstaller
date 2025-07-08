@@ -63,6 +63,10 @@ builder.Services.AddSingleton<AgentApiClient>();
 // InstallationService wird später angepasst (Scoped)
 builder.Services.AddScoped<InstallationService>();
 
+// Tenant Management Services
+builder.Services.AddScoped<TenantService>();
+builder.Services.AddScoped<InvitationService>();
+
 
 var app = builder.Build();
 

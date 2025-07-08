@@ -120,7 +120,7 @@
 
                         <dt class="col-sm-5">Environment:</dt>
                         <dd class="col-sm-7">
-                            <span class="badge bg-secondary">@task.Environment</span>
+                            <span class="badge bg-secondary">@task.EnvironmentId</span>
                         </dd>
 
                         <dt class="col-sm-5">Status:</dt>
@@ -271,7 +271,7 @@ else
             var newTask = await InstallationService.CreateTaskAsync(
                 $"{task.Name} (Copy)",
                 task.Description,
-                task.Environment
+                task.EnvironmentId
             );
             Navigation.NavigateTo($"/installations/{newTask.Id}");
         }

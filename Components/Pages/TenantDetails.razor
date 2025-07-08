@@ -1,0 +1,409 @@
+@page "/tenants/{tenantId:guid}"
+@inject TenantService TenantService
+@inject InvitationService InvitationService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Tenant Details</PageTitle>
+
+<div class="container-fluid">
+    @if (tenant == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Laden...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1>@tenant.Name</h1>
+                        <p class="text-muted">@tenant.Description</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-secondary me-2" @onclick="GoBack">
+                            <i class="fas fa-arrow-left"></i> Zurück
+                        </button>
+                        <button class="btn btn-primary" @onclick="ShowInviteModal">
+                            <i class="fas fa-user-plus"></i> Benutzer einladen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Users Tab -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Benutzer (@tenant.TenantUsers.Count)</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (tenant.TenantUsers.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>E-Mail</th>
+                                            <th>Rolle</th>
+                                            <th>Status</th>
+                                            <th>Letzter Login</th>
+                                            <th>Aktionen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in tenant.TenantUsers)
+                                        {
+                                            <tr>
+                                                <td>@user.FirstName @user.LastName</td>
+                                                <td>@user.Email</td>
+                                                <td>
+                                                    <span class="badge bg-@(user.Role == "Admin" ? "danger" : "primary")">
+                                                        @user.Role
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-@(user.IsActive ? "success" : "secondary")">
+                                                        @(user.IsActive ? "Aktiv" : "Inaktiv")
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @if (user.LastLoginAt.HasValue)
+                                                    {
+                                                        <span>@user.LastLoginAt.Value.ToString("dd.MM.yyyy HH:mm")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Nie</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" @onclick="() => ChangeUserRole(user)">
+                                                                <i class="fas fa-user-cog"></i> Rolle ändern
+                                                            </a></li>
+                                                            <li><a class="dropdown-item" @onclick="() => ToggleUserStatus(user)">
+                                                                <i class="fas fa-@(user.IsActive ? "pause" : "play")"></i> 
+                                                                @(user.IsActive ? "Deaktivieren" : "Aktivieren")
+                                                            </a></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><a class="dropdown-item text-danger" @onclick="() => RemoveUser(user)">
+                                                                <i class="fas fa-trash"></i> Entfernen
+                                                            </a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Noch keine Benutzer vorhanden</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Pending Invitations -->
+                @if (pendingInvitations.Any())
+                {
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Offene Einladungen (@pendingInvitations.Count)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>E-Mail</th>
+                                            <th>Rolle</th>
+                                            <th>Gesendet</th>
+                                            <th>Läuft ab</th>
+                                            <th>Aktionen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var invitation in pendingInvitations)
+                                        {
+                                            <tr>
+                                                <td>@invitation.FirstName @invitation.LastName</td>
+                                                <td>@invitation.Email</td>
+                                                <td>
+                                                    <span class="badge bg-@(invitation.Role == "Admin" ? "danger" : "primary")">
+                                                        @invitation.Role
+                                                    </span>
+                                                </td>
+                                                <td>@invitation.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                                <td>
+                                                    <span class="@(invitation.ExpiresAt < DateTime.UtcNow.AddDays(1) ? "text-warning" : "")">
+                                                        @invitation.ExpiresAt.ToString("dd.MM.yyyy HH:mm")
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ResendInvitation(invitation.Id)">
+                                                        <i class="fas fa-paper-plane"></i> Erneut senden
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelInvitation(invitation.Id)">
+                                                        <i class="fas fa-times"></i> Abbrechen
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="col-md-4">
+                <!-- Tenant Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Tenant-Informationen</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Name:</strong><br>
+                            @tenant.Name
+                        </div>
+                        <div class="mb-3">
+                            <strong>Kontakt E-Mail:</strong><br>
+                            @tenant.ContactEmail
+                        </div>
+                        <div class="mb-3">
+                            <strong>Status:</strong><br>
+                            <span class="badge bg-@(tenant.IsActive ? "success" : "secondary")">
+                                @(tenant.IsActive ? "Aktiv" : "Inaktiv")
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Erstellt:</strong><br>
+                            @tenant.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                        </div>
+                        @if (tenant.UpdatedAt.HasValue)
+                        {
+                            <div class="mb-3">
+                                <strong>Aktualisiert:</strong><br>
+                                @tenant.UpdatedAt.Value.ToString("dd.MM.yyyy HH:mm")
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Environments -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Umgebungen (@tenant.Environments.Count)</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (tenant.Environments.Any())
+                        {
+                            @foreach (var environment in tenant.Environments)
+                            {
+                                <div class="mb-2">
+                                    <strong>@environment.Name</strong><br>
+                                    <small class="text-muted">@environment.Description</small>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">Keine Umgebungen vorhanden</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Invite User Modal -->
+<div class="modal fade" id="inviteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Benutzer einladen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="inviteModel" OnValidSubmit="SendInvitation">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">E-Mail-Adresse *</label>
+                        <InputText @bind-Value="inviteModel.Email" class="form-control" placeholder="benutzer@example.com" />
+                        <ValidationMessage For="() => inviteModel.Email" />
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Vorname *</label>
+                            <InputText @bind-Value="inviteModel.FirstName" class="form-control" />
+                            <ValidationMessage For="() => inviteModel.FirstName" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nachname *</label>
+                            <InputText @bind-Value="inviteModel.LastName" class="form-control" />
+                            <ValidationMessage For="() => inviteModel.LastName" />
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Rolle *</label>
+                        <InputSelect @bind-Value="inviteModel.Role" class="form-select">
+                            <option value="Customer">Customer</option>
+                            <option value="Admin">Admin</option>
+                        </InputSelect>
+                        <ValidationMessage For="() => inviteModel.Role" />
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="submit" class="btn btn-primary">Einladung senden</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid TenantId { get; set; }
+    
+    private Tenant? tenant;
+    private List<UserInvitation> pendingInvitations = new();
+    private InviteUserModel inviteModel = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTenantDetails();
+        await LoadPendingInvitations();
+    }
+    
+    private async Task LoadTenantDetails()
+    {
+        tenant = await TenantService.GetTenantByIdAsync(TenantId);
+        if (tenant == null)
+        {
+            Navigation.NavigateTo("/tenants");
+        }
+    }
+    
+    private async Task LoadPendingInvitations()
+    {
+        pendingInvitations = await InvitationService.GetPendingInvitationsAsync(TenantId);
+    }
+    
+    private void ShowInviteModal()
+    {
+        inviteModel = new InviteUserModel();
+        // Show modal using JavaScript
+    }
+    
+    private async Task SendInvitation()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst("sub")?.Value ?? "";
+            
+            await InvitationService.CreateInvitationAsync(
+                TenantId,
+                inviteModel.Email,
+                inviteModel.FirstName,
+                inviteModel.LastName,
+                inviteModel.Role,
+                userId
+            );
+            
+            await LoadPendingInvitations();
+            // Hide modal using JavaScript
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Handle error
+            Console.WriteLine($"Error sending invitation: {ex.Message}");
+        }
+    }
+    
+    private async Task ResendInvitation(Guid invitationId)
+    {
+        await InvitationService.ResendInvitationAsync(invitationId);
+        await LoadPendingInvitations();
+        StateHasChanged();
+    }
+    
+    private async Task CancelInvitation(Guid invitationId)
+    {
+        await InvitationService.CancelInvitationAsync(invitationId);
+        await LoadPendingInvitations();
+        StateHasChanged();
+    }
+    
+    private async Task RemoveUser(TenantUser user)
+    {
+        await TenantService.RemoveUserFromTenantAsync(TenantId, user.UserId);
+        await LoadTenantDetails();
+        StateHasChanged();
+    }
+    
+    private async Task ChangeUserRole(TenantUser user)
+    {
+        var newRole = user.Role == "Admin" ? "Customer" : "Admin";
+        await TenantService.UpdateUserRoleAsync(TenantId, user.UserId, newRole);
+        await LoadTenantDetails();
+        StateHasChanged();
+    }
+    
+    private async Task ToggleUserStatus(TenantUser user)
+    {
+        // This would require a method in TenantService to update user status
+        // For now, we'll just reload the data
+        await LoadTenantDetails();
+        StateHasChanged();
+    }
+    
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/tenants");
+    }
+    
+    public class InviteUserModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+        
+        [Required]
+        public string FirstName { get; set; } = "";
+        
+        [Required]
+        public string LastName { get; set; } = "";
+        
+        [Required]
+        public string Role { get; set; } = "Customer";
+    }
+}

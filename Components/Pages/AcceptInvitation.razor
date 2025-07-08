@@ -1,0 +1,128 @@
+@page "/invitation/accept/{token}"
+@inject InvitationService InvitationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Einladung annehmen</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    @if (isLoading)
+                    {
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Laden...</span>
+                        </div>
+                        <p class="mt-3">Einladung wird verarbeitet...</p>
+                    }
+                    else if (invitation == null)
+                    {
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h4>Einladung nicht gefunden</h4>
+                        <p class="text-muted">Die Einladung ist möglicherweise abgelaufen oder wurde bereits verwendet.</p>
+                        <a href="/" class="btn btn-primary">Zur Startseite</a>
+                    }
+                    else if (isAccepted)
+                    {
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h4>Einladung angenommen!</h4>
+                        <p>Willkommen bei <strong>@invitation.Tenant.Name</strong>!</p>
+                        <p class="text-muted">Sie wurden als <strong>@invitation.Role</strong> hinzugefügt.</p>
+                        <a href="/" class="btn btn-primary">Zum Dashboard</a>
+                    }
+                    else
+                    {
+                        <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                        <h4>Einladung zu @invitation.Tenant.Name</h4>
+                        <p>Sie wurden eingeladen, dem Tenant <strong>@invitation.Tenant.Name</strong> beizutreten.</p>
+                        <p class="text-muted">Ihre Rolle: <strong>@invitation.Role</strong></p>
+                        
+                        <AuthorizeView>
+                            <Authorized Context="authContext">
+                                <button class="btn btn-primary" @onclick="AcceptInvitationAsync">
+                                    <i class="fas fa-check"></i> Einladung annehmen
+                                </button>
+                            </Authorized>
+                            <NotAuthorized>
+                                <p class="text-muted">Sie müssen sich anmelden, um diese Einladung anzunehmen.</p>
+                                <a href="/login" class="btn btn-primary">Anmelden</a>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Token { get; set; } = "";
+    
+    private UserInvitation? invitation;
+    private bool isLoading = true;
+    private bool isAccepted = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            invitation = await InvitationService.GetInvitationByTokenAsync(Token);
+            
+            if (invitation != null)
+            {
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                if (authState.User.Identity?.IsAuthenticated == true)
+                {
+                    var userId = authState.User.FindFirst("sub")?.Value ?? "";
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        // Auto-accept if user is already logged in
+                        await AcceptInvitationAsync();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading invitation: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private async Task AcceptInvitationAsync()
+    {
+        try
+        {
+            if (invitation == null) return;
+            
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst("sub")?.Value ?? "";
+            
+            if (string.IsNullOrEmpty(userId))
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            
+            var success = await InvitationService.AcceptInvitationAsync(Token, userId);
+            if (success)
+            {
+                isAccepted = true;
+                StateHasChanged();
+                
+                // Redirect to dashboard after a short delay
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error accepting invitation: {ex.Message}");
+        }
+    }
+}

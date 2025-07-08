@@ -1,0 +1,219 @@
+@page "/tenants"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@inject TenantService TenantService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Tenant-Verwaltung</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Tenant-Verwaltung</h1>
+                <button class="btn btn-primary" @onclick="ShowCreateModal">
+                    <i class="fas fa-plus"></i> Neuen Tenant erstellen
+                </button>
+            </div>
+            
+            @if (tenants == null)
+            {
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Laden...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var tenant in tenants)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h5 class="card-title">@tenant.Name</h5>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" @onclick="() => ViewTenant(tenant.Id)">
+                                                    <i class="fas fa-eye"></i> Anzeigen
+                                                </a></li>
+                                                <li><a class="dropdown-item" @onclick="() => EditTenant(tenant)">
+                                                    <i class="fas fa-edit"></i> Bearbeiten
+                                                </a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" @onclick="() => DeleteTenant(tenant)">
+                                                    <i class="fas fa-trash"></i> Löschen
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="card-text">
+                                        <small class="text-muted">@tenant.Description</small>
+                                    </p>
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <div class="fw-bold">@tenant.TenantUsers.Count</div>
+                                            <small class="text-muted">Benutzer</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="fw-bold">@tenant.Environments.Count</div>
+                                            <small class="text-muted">Umgebungen</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-envelope"></i> @tenant.ContactEmail
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i> @tenant.CreatedAt.ToString("dd.MM.yyyy")
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal fade" id="tenantModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@(isEditing ? "Tenant bearbeiten" : "Neuen Tenant erstellen")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="currentTenant" OnValidSubmit="SaveTenant">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Name *</label>
+                        <InputText @bind-Value="currentTenant.Name" class="form-control" placeholder="Tenant Name" />
+                        <ValidationMessage For="() => currentTenant.Name" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Beschreibung</label>
+                        <InputTextArea @bind-Value="currentTenant.Description" class="form-control" rows="3" placeholder="Beschreibung des Tenants" />
+                        <ValidationMessage For="() => currentTenant.Description" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Kontakt E-Mail *</label>
+                        <InputText @bind-Value="currentTenant.ContactEmail" class="form-control" placeholder="kontakt@tenant.com" />
+                        <ValidationMessage For="() => currentTenant.ContactEmail" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <InputCheckbox @bind-Value="currentTenant.IsActive" class="form-check-input" />
+                            <label class="form-check-label">Aktiv</label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="submit" class="btn btn-primary">
+                            @(isEditing ? "Speichern" : "Erstellen")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Tenant>? tenants;
+    private Tenant currentTenant = new();
+    private bool isEditing = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTenants();
+    }
+    
+    private async Task LoadTenants()
+    {
+        tenants = await TenantService.GetAllTenantsAsync();
+    }
+    
+    private void ShowCreateModal()
+    {
+        currentTenant = new Tenant();
+        isEditing = false;
+        // Show modal using JavaScript
+        // In a real application, you would use JSInterop
+    }
+    
+    private void EditTenant(Tenant tenant)
+    {
+        currentTenant = new Tenant
+        {
+            Id = tenant.Id,
+            Name = tenant.Name,
+            Description = tenant.Description,
+            ContactEmail = tenant.ContactEmail,
+            IsActive = tenant.IsActive
+        };
+        isEditing = true;
+        // Show modal using JavaScript
+    }
+    
+    private async Task SaveTenant()
+    {
+        try
+        {
+            if (isEditing)
+            {
+                await TenantService.UpdateTenantAsync(currentTenant);
+            }
+            else
+            {
+                await TenantService.CreateTenantAsync(currentTenant);
+            }
+            
+            await LoadTenants();
+            // Hide modal using JavaScript
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Handle error
+            Console.WriteLine($"Error saving tenant: {ex.Message}");
+        }
+    }
+    
+    private async Task DeleteTenant(Tenant tenant)
+    {
+        if (await TenantService.DeleteTenantAsync(tenant.Id))
+        {
+            await LoadTenants();
+            StateHasChanged();
+        }
+    }
+    
+    private void ViewTenant(Guid tenantId)
+    {
+        Navigation.NavigateTo($"/tenants/{tenantId}");
+    }
+}

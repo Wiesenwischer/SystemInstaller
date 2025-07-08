@@ -47,7 +47,7 @@
                                         </td>
                                         <td class="text-muted">@task.Description</td>
                                         <td>
-                                            <span class="badge bg-secondary">@task.Environment</span>
+                                            <span class="badge bg-secondary">@task.EnvironmentId</span>
                                         </td>
                                         <td>
                                             <span class="badge @GetStatusBadgeClass(task.Status)">
@@ -204,7 +204,7 @@
     {
         if (!CanCreateTask()) return;
 
-        var task = await InstallationService.CreateTaskAsync(newTaskName, newTaskDescription, newTaskEnvironment);
+        var task = await InstallationService.CreateTaskAsync(newTaskName, newTaskDescription, Guid.NewGuid());
         HideCreateModal();
         Navigation.NavigateTo($"/installations/{task.Id}");
     }
