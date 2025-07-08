@@ -2,7 +2,9 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims
-@inject TenantService TenantService
+@using SystemInstaller.Application.Interfaces
+@using SystemInstaller.Application.DTOs
+@inject ITenantApplicationService TenantService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize(Roles = "admin")]
@@ -62,11 +64,11 @@
                                     
                                     <div class="row text-center">
                                         <div class="col-6">
-                                            <div class="fw-bold">@tenant.TenantUsers.Count</div>
+                                            <div class="fw-bold">@tenant.UserCount</div>
                                             <small class="text-muted">Benutzer</small>
                                         </div>
                                         <div class="col-6">
-                                            <div class="fw-bold">@tenant.Environments.Count</div>
+                                            <div class="fw-bold">@tenant.EnvironmentCount</div>
                                             <small class="text-muted">Umgebungen</small>
                                         </div>
                                     </div>
@@ -123,13 +125,6 @@
                         <ValidationMessage For="() => currentTenant.ContactEmail" />
                     </div>
                     
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <InputCheckbox @bind-Value="currentTenant.IsActive" class="form-check-input" />
-                            <label class="form-check-label">Aktiv</label>
-                        </div>
-                    </div>
-                    
                     <div class="d-flex justify-content-end">
                         <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Abbrechen</button>
                         <button type="submit" class="btn btn-primary">
@@ -143,9 +138,17 @@
 </div>
 
 @code {
-    private List<Tenant>? tenants;
-    private Tenant currentTenant = new();
+    private List<TenantDto>? tenants;
+    private TenantFormModel currentTenant = new();
     private bool isEditing = false;
+    private Guid? editingId;
+    
+    public class TenantFormModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string ContactEmail { get; set; } = string.Empty;
+    }
     
     protected override async Task OnInitializedAsync()
     {
@@ -154,28 +157,29 @@
     
     private async Task LoadTenants()
     {
-        tenants = await TenantService.GetAllTenantsAsync();
+        var tenantEnumerable = await TenantService.GetAllTenantsAsync();
+        tenants = tenantEnumerable.ToList();
     }
     
     private void ShowCreateModal()
     {
-        currentTenant = new Tenant();
+        currentTenant = new TenantFormModel();
         isEditing = false;
+        editingId = null;
         // Show modal using JavaScript
         // In a real application, you would use JSInterop
     }
     
-    private void EditTenant(Tenant tenant)
+    private void EditTenant(TenantDto tenant)
     {
-        currentTenant = new Tenant
+        currentTenant = new TenantFormModel
         {
-            Id = tenant.Id,
             Name = tenant.Name,
             Description = tenant.Description,
-            ContactEmail = tenant.ContactEmail,
-            IsActive = tenant.IsActive
+            ContactEmail = tenant.ContactEmail
         };
         isEditing = true;
+        editingId = tenant.Id;
         // Show modal using JavaScript
     }
     
@@ -183,13 +187,21 @@
     {
         try
         {
-            if (isEditing)
+            if (isEditing && editingId.HasValue)
             {
-                await TenantService.UpdateTenantAsync(currentTenant);
+                var updateDto = new UpdateTenantDto(
+                    currentTenant.Name,
+                    currentTenant.Description,
+                    currentTenant.ContactEmail);
+                await TenantService.UpdateTenantAsync(editingId.Value, updateDto);
             }
             else
             {
-                await TenantService.CreateTenantAsync(currentTenant);
+                var createDto = new CreateTenantDto(
+                    currentTenant.Name,
+                    currentTenant.ContactEmail,
+                    currentTenant.Description);
+                await TenantService.CreateTenantAsync(createDto);
             }
             
             await LoadTenants();
@@ -203,12 +215,18 @@
         }
     }
     
-    private async Task DeleteTenant(Tenant tenant)
+    private async Task DeleteTenant(TenantDto tenant)
     {
-        if (await TenantService.DeleteTenantAsync(tenant.Id))
+        try
         {
+            await TenantService.DeleteTenantAsync(tenant.Id);
             await LoadTenants();
             StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Handle error
+            Console.WriteLine($"Error deleting tenant: {ex.Message}");
         }
     }
     

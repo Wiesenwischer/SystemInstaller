@@ -1,6 +1,7 @@
 @page "/environments"
-@using SystemInstaller.Web.Data
-@inject InstallationService InstallationService
+@using SystemInstaller.Application.Interfaces
+@using SystemInstaller.Application.DTOs
+@inject IInstallationApplicationService InstallationService
 
 <h3>Umgebungen</h3>
 
@@ -38,10 +39,11 @@ else
 <a class="btn btn-primary" href="/environments/new">Neue Umgebung anlegen</a>
 
 @code {
-    private List<InstallationEnvironment>? environments;
+    private List<InstallationEnvironmentResultDto>? environments;
 
     protected override async Task OnInitializedAsync()
     {
-        environments = await InstallationService.GetEnvironmentsAsync();
+        // For now, load environments for a default tenant - this would need proper tenant context
+        environments = await InstallationService.GetEnvironmentsAsync(Guid.Empty);
     }
 }

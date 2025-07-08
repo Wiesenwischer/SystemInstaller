@@ -1,5 +1,7 @@
 @page "/invitation/accept/{token}"
-@inject InvitationService InvitationService
+@using SystemInstaller.Application.Interfaces
+@using SystemInstaller.Application.DTOs
+@inject IUserInvitationApplicationService InvitationService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 
@@ -28,15 +30,15 @@
                     {
                         <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
                         <h4>Einladung angenommen!</h4>
-                        <p>Willkommen bei <strong>@invitation.Tenant.Name</strong>!</p>
+                        <p>Willkommen bei <strong>@invitation.TenantName</strong>!</p>
                         <p class="text-muted">Sie wurden als <strong>@invitation.Role</strong> hinzugefügt.</p>
                         <a href="/" class="btn btn-primary">Zum Dashboard</a>
                     }
                     else
                     {
                         <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
-                        <h4>Einladung zu @invitation.Tenant.Name</h4>
-                        <p>Sie wurden eingeladen, dem Tenant <strong>@invitation.Tenant.Name</strong> beizutreten.</p>
+                        <h4>Einladung zu @invitation.TenantName</h4>
+                        <p>Sie wurden eingeladen, dem Tenant <strong>@invitation.TenantName</strong> beizutreten.</p>
                         <p class="text-muted">Ihre Rolle: <strong>@invitation.Role</strong></p>
                         
                         <AuthorizeView>
@@ -60,7 +62,7 @@
 @code {
     [Parameter] public string Token { get; set; } = "";
     
-    private UserInvitation? invitation;
+    private UserInvitationResultDto? invitation;
     private bool isLoading = true;
     private bool isAccepted = false;
     
@@ -109,16 +111,19 @@
                 return;
             }
             
-            var success = await InvitationService.AcceptInvitationAsync(Token, userId);
-            if (success)
+            var acceptDto = new AcceptInvitationDto
             {
-                isAccepted = true;
-                StateHasChanged();
-                
-                // Redirect to dashboard after a short delay
-                await Task.Delay(2000);
-                Navigation.NavigateTo("/");
-            }
+                Token = Token,
+                UserId = userId
+            };
+            
+            await InvitationService.AcceptInvitationAsync(acceptDto);
+            isAccepted = true;
+            StateHasChanged();
+            
+            // Redirect to dashboard after a short delay
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/");
         }
         catch (Exception ex)
         {

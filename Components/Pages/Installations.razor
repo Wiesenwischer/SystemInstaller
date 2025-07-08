@@ -1,8 +1,8 @@
 @page "/installations"
-@using SystemInstaller.Web.Services
-@using SystemInstaller.Web.Data
-@inject InstallationService InstallationService
-@inject AgentApiClient AgentApiClient
+@using SystemInstaller.Application.Interfaces
+@using SystemInstaller.Application.DTOs
+@using DomainInstallationStatus = SystemInstaller.Domain.ValueObjects.InstallationStatus
+@inject IInstallationApplicationService InstallationService
 @inject NavigationManager Navigation
 @implements IDisposable
 
@@ -47,7 +47,7 @@
                                         </td>
                                         <td class="text-muted">@task.Description</td>
                                         <td>
-                                            <span class="badge bg-secondary">@task.EnvironmentId</span>
+                                            <span class="badge bg-secondary">@task.EnvironmentName</span>
                                         </td>
                                         <td>
                                             <span class="badge @GetStatusBadgeClass(task.Status)">
@@ -72,13 +72,13 @@
                                                 <a href="/installations/@task.Id" class="btn btn-sm btn-outline-primary">
                                                     Details
                                                 </a>
-                                                @if (task.Status == InstallationStatus.Pending)
+                                                @if (task.Status == DomainInstallationStatus.Pending)
                                                 {
                                                     <button class="btn btn-sm btn-success" @onclick="() => StartInstallation(task.Id)">
                                                         Start
                                                     </button>
                                                 }
-                                                @if (task.Status == InstallationStatus.Running)
+                                                @if (task.Status == DomainInstallationStatus.Running)
                                                 {
                                                     <button class="btn btn-sm btn-warning" @onclick="() => CancelInstallation(task.Id)">
                                                         Cancel
@@ -131,11 +131,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="taskEnvironment" class="form-label">Environment</label>
-                            <select class="form-select" id="taskEnvironment" @bind="newTaskEnvironment">
-                                <option value="">Select environment...</option>
+                            <select class="form-select" id="taskEnvironment" @bind="selectedEnvironmentId">
+                                <option value="@Guid.Empty">Select environment...</option>
                                 @foreach (var env in availableEnvironments)
                                 {
-                                    <option value="@env">@env</option>
+                                    <option value="@env.Id">@env.Name</option>
                                 }
                             </select>
                         </div>
@@ -153,30 +153,36 @@
 }
 
 @code {
-    private List<InstallationTask> tasks = new();
-    private string[] availableEnvironments = Array.Empty<string>();
+    private List<InstallationTaskResultDto> tasks = new();
+    private List<InstallationEnvironmentResultDto> availableEnvironments = new();
     private bool showCreateModal = false;
     private string newTaskName = string.Empty;
     private string newTaskDescription = string.Empty;
-    private string newTaskEnvironment = string.Empty;
+    private Guid selectedEnvironmentId = Guid.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         InstallationService.TaskUpdated += OnTaskUpdated;
-        LoadTasks();
-        availableEnvironments = await AgentApiClient.GetAvailableEnvironmentsAsync();
+        await LoadTasksAsync();
+        await LoadEnvironmentsAsync();
     }
 
-    private void LoadTasks()
+    private async Task LoadTasksAsync()
     {
-        tasks = InstallationService.GetAllTasks().ToList();
+        tasks = await InstallationService.GetAllTasksAsync();
     }
 
-    private void OnTaskUpdated(object? sender, InstallationTask task)
+    private async Task LoadEnvironmentsAsync()
     {
-        InvokeAsync(() =>
+        // For now, load environments for a default tenant - this would need proper tenant context
+        availableEnvironments = await InstallationService.GetEnvironmentsAsync(Guid.Empty);
+    }
+
+    private void OnTaskUpdated(object? sender, InstallationTaskResultDto task)
+    {
+        InvokeAsync(async () =>
         {
-            LoadTasks();
+            await LoadTasksAsync();
             StateHasChanged();
         });
     }
@@ -186,7 +192,7 @@
         showCreateModal = true;
         newTaskName = string.Empty;
         newTaskDescription = string.Empty;
-        newTaskEnvironment = string.Empty;
+        selectedEnvironmentId = Guid.Empty;
     }
 
     private void HideCreateModal()
@@ -197,14 +203,21 @@
     private bool CanCreateTask()
     {
         return !string.IsNullOrWhiteSpace(newTaskName) && 
-               !string.IsNullOrWhiteSpace(newTaskEnvironment);
+               selectedEnvironmentId != Guid.Empty;
     }
 
     private async Task CreateTask()
     {
         if (!CanCreateTask()) return;
 
-        var task = await InstallationService.CreateTaskAsync(newTaskName, newTaskDescription, Guid.NewGuid());
+        var dto = new CreateInstallationTaskDto
+        {
+            Name = newTaskName,
+            Description = newTaskDescription,
+            EnvironmentId = selectedEnvironmentId
+        };
+
+        var task = await InstallationService.CreateTaskAsync(dto);
         HideCreateModal();
         Navigation.NavigateTo($"/installations/{task.Id}");
     }
@@ -219,26 +232,26 @@
         await InstallationService.CancelInstallationAsync(taskId);
     }
 
-    private string GetStatusBadgeClass(InstallationStatus status)
+    private string GetStatusBadgeClass(DomainInstallationStatus status)
     {
         return status switch
         {
-            InstallationStatus.Pending => "bg-secondary",
-            InstallationStatus.Running => "bg-warning",
-            InstallationStatus.Completed => "bg-success",
-            InstallationStatus.Failed => "bg-danger",
-            InstallationStatus.Cancelled => "bg-dark",
+            DomainInstallationStatus.Pending => "bg-secondary",
+            DomainInstallationStatus.Running => "bg-warning",
+            DomainInstallationStatus.Completed => "bg-success",
+            DomainInstallationStatus.Failed => "bg-danger",
+            DomainInstallationStatus.Cancelled => "bg-dark",
             _ => "bg-secondary"
         };
     }
 
-    private string GetProgressBarClass(InstallationStatus status)
+    private string GetProgressBarClass(DomainInstallationStatus status)
     {
         return status switch
         {
-            InstallationStatus.Running => "bg-warning",
-            InstallationStatus.Completed => "bg-success",
-            InstallationStatus.Failed => "bg-danger",
+            DomainInstallationStatus.Running => "bg-warning",
+            DomainInstallationStatus.Completed => "bg-success",
+            DomainInstallationStatus.Failed => "bg-danger",
             _ => "bg-secondary"
         };
     }

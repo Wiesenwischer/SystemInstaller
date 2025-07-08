@@ -1,7 +1,7 @@
 @page "/"
-@using SystemInstaller.Web.Services
-@using SystemInstaller.Web.Data
-@inject InstallationService InstallationService
+@using SystemInstaller.Application.Interfaces
+@using SystemInstaller.Application.DTOs
+@inject IInstallationApplicationService InstallationService
 @inject NavigationManager Navigation
 @implements IDisposable
 
@@ -111,54 +111,45 @@
 </div>
 
 @code {
-    private List<InstallationTask> recentTasks = new();
+    private List<InstallationTaskResultDto> recentTasks = new();
     private int totalTasks = 0;
     private int completedTasks = 0;
     private int runningTasks = 0;
     private int failedTasks = 0;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        InstallationService.TaskUpdated += OnTaskUpdated;
-        LoadDashboardData();
+        await LoadDashboardData();
     }
 
-    private void LoadDashboardData()
+    private async Task LoadDashboardData()
     {
-        var allTasks = InstallationService.GetAllTasks().ToList();
-        recentTasks = allTasks.Take(5).ToList();
+        var allTasks = await InstallationService.GetAllTasksAsync();
+        var taskList = allTasks.ToList();
+        recentTasks = taskList.Take(5).ToList();
         
-        totalTasks = allTasks.Count;
-        completedTasks = allTasks.Count(t => t.Status == InstallationStatus.Completed);
-        runningTasks = allTasks.Count(t => t.Status == InstallationStatus.Running);
-        failedTasks = allTasks.Count(t => t.Status == InstallationStatus.Failed);
+        totalTasks = taskList.Count;
+        completedTasks = taskList.Count(t => t.Status == Domain.ValueObjects.InstallationStatus.Completed);
+        runningTasks = taskList.Count(t => t.Status == Domain.ValueObjects.InstallationStatus.Running);
+        failedTasks = taskList.Count(t => t.Status == Domain.ValueObjects.InstallationStatus.Failed);
     }
 
-    private void OnTaskUpdated(object? sender, InstallationTask task)
-    {
-        InvokeAsync(() =>
-        {
-            LoadDashboardData();
-            StateHasChanged();
-        });
-    }
-
-    private string GetStatusBadgeClass(InstallationStatus status)
+    private string GetStatusBadgeClass(Domain.ValueObjects.InstallationStatus status)
     {
         return status switch
         {
-            InstallationStatus.Pending => "bg-secondary",
-            InstallationStatus.Running => "bg-warning",
-            InstallationStatus.Completed => "bg-success",
-            InstallationStatus.Failed => "bg-danger",
-            InstallationStatus.Cancelled => "bg-dark",
+            Domain.ValueObjects.InstallationStatus.Pending => "bg-secondary",
+            Domain.ValueObjects.InstallationStatus.Running => "bg-warning",
+            Domain.ValueObjects.InstallationStatus.Completed => "bg-success",
+            Domain.ValueObjects.InstallationStatus.Failed => "bg-danger",
+            Domain.ValueObjects.InstallationStatus.Cancelled => "bg-dark",
             _ => "bg-secondary"
         };
     }
 
     public void Dispose()
     {
-        InstallationService.TaskUpdated -= OnTaskUpdated;
+        // No longer need to unsubscribe from events
     }
 }
     </Authorized>

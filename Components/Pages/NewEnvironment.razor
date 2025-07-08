@@ -1,7 +1,8 @@
 @page "/environments/new"
-@using SystemInstaller.Web.Data
+@using SystemInstaller.Application.Interfaces
+@using SystemInstaller.Application.DTOs
 @inject NavigationManager Navigation
-@inject InstallationService InstallationService
+@inject IInstallationApplicationService InstallationService
 @rendermode InteractiveServer
 
 <h3>Neue Umgebung anlegen</h3>
@@ -22,7 +23,13 @@
 </EditForm>
 
 @code {
-    private InstallationEnvironment environment = new();
+    private EnvironmentFormModel environment = new();
+
+    public class EnvironmentFormModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+    }
 
     private void OnDescriptionChanged(ChangeEventArgs e)
     {
@@ -37,7 +44,14 @@
         Console.WriteLine($"Description: '{environment.Description}'");
         Console.WriteLine($"Description is null: {environment.Description == null}");
         
-        await InstallationService.AddEnvironmentAsync(environment);
+        var createDto = new CreateInstallationEnvironmentDto
+        {
+            TenantId = Guid.NewGuid(), // TODO: Get from current user context
+            Name = environment.Name,
+            Description = environment.Description
+        };
+        
+        await InstallationService.CreateEnvironmentAsync(createDto);
         Navigation.NavigateTo("/installations");
     }
 }
