@@ -6,10 +6,10 @@ public class TenantUser
 {
     public Guid Id { get; private set; }
     public Guid TenantId { get; private set; }
-    public string UserId { get; private set; } // Keycloak User ID
-    public Email Email { get; private set; }
-    public PersonName Name { get; private set; }
-    public UserRole Role { get; private set; }
+    public string UserId { get; private set; } = null!; // Keycloak User ID
+    public Email Email { get; private set; } = null!;
+    public PersonName Name { get; private set; } = null!;
+    public UserRole Role { get; private set; } = null!;
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? LastLoginAt { get; private set; }

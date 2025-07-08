@@ -5,9 +5,9 @@ namespace SystemInstaller.Domain.Entities;
 public class Tenant
 {
     public Guid Id { get; private set; }
-    public string Name { get; private set; }
+    public string Name { get; private set; } = null!;
     public string? Description { get; private set; }
-    public Email ContactEmail { get; private set; }
+    public Email ContactEmail { get; private set; } = null!;
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
