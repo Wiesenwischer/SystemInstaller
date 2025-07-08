@@ -23,3 +23,22 @@ public record UpdateTenantDto(
     string? Description,
     string ContactEmail
 );
+
+public record TenantEnvironmentDto(
+    Guid Id,
+    string Name,
+    string? Description,
+    DateTime CreatedAt
+);
+
+public record TenantDetailsDto(
+    Guid Id,
+    string Name,
+    string? Description,
+    string ContactEmail,
+    bool IsActive,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt,
+    List<TenantUserDto> TenantUsers,
+    List<TenantEnvironmentDto> Environments
+);

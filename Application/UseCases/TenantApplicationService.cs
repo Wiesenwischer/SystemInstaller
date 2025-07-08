@@ -104,6 +104,69 @@ public class TenantApplicationService : ITenantApplicationService
         return await MapToTenantDtoAsync(tenant);
     }
 
+    public async Task<TenantDetailsDto?> GetTenantDetailsAsync(Guid id)
+    {
+        var tenant = await _tenantRepository.GetByIdAsync(id);
+        if (tenant == null)
+            return null;
+
+        var users = await _tenantUserRepository.GetByTenantIdAsync(tenant.Id);
+        var environments = await _environmentRepository.GetByTenantIdAsync(tenant.Id);
+
+        var userDtos = users.Select(u => new TenantUserDto(
+            u.Id,
+            u.TenantId,
+            u.UserId,
+            u.Email.Value,
+            u.Name.FirstName,
+            u.Name.LastName,
+            $"{u.Name.FirstName} {u.Name.LastName}",
+            u.Role.Value,
+            u.IsActive,
+            u.CreatedAt,
+            u.LastLoginAt
+        )).ToList();
+
+        var environmentDtos = environments.Select(e => new TenantEnvironmentDto(
+            e.Id,
+            e.Name,
+            e.Description,
+            e.CreatedAt
+        )).ToList();
+
+        return new TenantDetailsDto(
+            tenant.Id,
+            tenant.Name,
+            tenant.Description,
+            tenant.ContactEmail.Value,
+            tenant.IsActive,
+            tenant.CreatedAt,
+            tenant.UpdatedAt,
+            userDtos,
+            environmentDtos
+        );
+    }
+
+    public async Task RemoveUserFromTenantAsync(Guid tenantId, string userId)
+    {
+        var tenant = await _tenantRepository.GetByIdAsync(tenantId);
+        if (tenant == null)
+            throw new InvalidOperationException("Tenant not found");
+
+        tenant.RemoveUser(userId);
+        await _tenantRepository.UpdateAsync(tenant);
+    }
+
+    public async Task UpdateUserRoleAsync(Guid tenantId, string userId, string role)
+    {
+        var tenantUser = await _tenantUserRepository.GetByTenantAndUserIdAsync(tenantId, userId);
+        if (tenantUser == null)
+            throw new InvalidOperationException("User not found in tenant");
+
+        tenantUser.UpdateRole(new UserRole(role));
+        await _tenantUserRepository.UpdateAsync(tenantUser);
+    }
+
     private async Task<IEnumerable<TenantDto>> MapToTenantDtosAsync(IEnumerable<Tenant> tenants)
     {
         var result = new List<TenantDto>();

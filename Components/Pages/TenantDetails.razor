@@ -1,6 +1,9 @@
 @page "/tenants/{tenantId:guid}"
-@inject TenantService TenantService
-@inject InvitationService InvitationService
+@using SystemInstaller.Application.Interfaces
+@using SystemInstaller.Application.DTOs
+@using System.ComponentModel.DataAnnotations
+@inject ITenantApplicationService TenantService
+@inject IUserInvitationApplicationService InvitationService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize(Roles = "admin")]
@@ -292,8 +295,8 @@
 @code {
     [Parameter] public Guid TenantId { get; set; }
     
-    private Tenant? tenant;
-    private List<UserInvitation> pendingInvitations = new();
+    private TenantDetailsDto? tenant;
+    private List<UserInvitationResultDto> pendingInvitations = new();
     private InviteUserModel inviteModel = new();
     
     protected override async Task OnInitializedAsync()
@@ -304,7 +307,7 @@
     
     private async Task LoadTenantDetails()
     {
-        tenant = await TenantService.GetTenantByIdAsync(TenantId);
+        tenant = await TenantService.GetTenantDetailsAsync(TenantId);
         if (tenant == null)
         {
             Navigation.NavigateTo("/tenants");
@@ -329,14 +332,17 @@
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var userId = authState.User.FindFirst("sub")?.Value ?? "";
             
-            await InvitationService.CreateInvitationAsync(
-                TenantId,
-                inviteModel.Email,
-                inviteModel.FirstName,
-                inviteModel.LastName,
-                inviteModel.Role,
-                userId
-            );
+            var createDto = new CreateUserInvitationDto
+            {
+                TenantId = TenantId,
+                Email = inviteModel.Email,
+                FirstName = inviteModel.FirstName,
+                LastName = inviteModel.LastName,
+                Role = inviteModel.Role,
+                InvitedByUserId = userId
+            };
+            
+            await InvitationService.CreateInvitationAsync(createDto);
             
             await LoadPendingInvitations();
             // Hide modal using JavaScript
@@ -363,14 +369,14 @@
         StateHasChanged();
     }
     
-    private async Task RemoveUser(TenantUser user)
+    private async Task RemoveUser(TenantUserDto user)
     {
         await TenantService.RemoveUserFromTenantAsync(TenantId, user.UserId);
         await LoadTenantDetails();
         StateHasChanged();
     }
     
-    private async Task ChangeUserRole(TenantUser user)
+    private async Task ChangeUserRole(TenantUserDto user)
     {
         var newRole = user.Role == "Admin" ? "Customer" : "Admin";
         await TenantService.UpdateUserRoleAsync(TenantId, user.UserId, newRole);
@@ -378,7 +384,7 @@
         StateHasChanged();
     }
     
-    private async Task ToggleUserStatus(TenantUser user)
+    private async Task ToggleUserStatus(TenantUserDto user)
     {
         // This would require a method in TenantService to update user status
         // For now, we'll just reload the data
