@@ -1,33 +1,47 @@
 using Microsoft.EntityFrameworkCore;
 using SystemInstaller.Web.Data;
+using SystemInstaller.Application.Interfaces;
+using SystemInstaller.Application.DTOs;
 
 namespace SystemInstaller.Web.Services
 {
     public class TenantService
     {
         private readonly SystemInstallerDbContext _context;
+        private readonly ITenantApplicationService _tenantApplicationService;
         
-        public TenantService(SystemInstallerDbContext context)
+        public TenantService(SystemInstallerDbContext context, ITenantApplicationService tenantApplicationService)
         {
             _context = context;
+            _tenantApplicationService = tenantApplicationService;
         }
         
-        // Tenant Management
+        // Tenant Management (using new architecture where possible)
         public async Task<List<Tenant>> GetAllTenantsAsync()
         {
-            return await _context.Tenants
-                .Include(t => t.TenantUsers)
-                .Include(t => t.Environments)
-                .OrderBy(t => t.Name)
-                .ToListAsync();
+            // Gradually migrate to new architecture
+            var tenantDtos = await _tenantApplicationService.GetAllTenantsAsync();
+            return tenantDtos.Select(MapToLegacyTenant).ToList();
         }
         
         public async Task<Tenant?> GetTenantByIdAsync(Guid id)
         {
-            return await _context.Tenants
-                .Include(t => t.TenantUsers)
-                .Include(t => t.Environments)
-                .FirstOrDefaultAsync(t => t.Id == id);
+            var tenantDto = await _tenantApplicationService.GetTenantByIdAsync(id);
+            return tenantDto != null ? MapToLegacyTenant(tenantDto) : null;
+        }
+        
+        private static Tenant MapToLegacyTenant(TenantDto dto)
+        {
+            return new Tenant
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Description = dto.Description,
+                ContactEmail = dto.ContactEmail,
+                IsActive = dto.IsActive,
+                CreatedAt = dto.CreatedAt,
+                UpdatedAt = dto.UpdatedAt
+            };
         }
         
         public async Task<Tenant> CreateTenantAsync(Tenant tenant)

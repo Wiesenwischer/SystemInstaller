@@ -1,7 +1,7 @@
 using SystemInstaller.Web.Components;
-using SystemInstaller.Web.Services;
+using SystemInstaller.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using SystemInstaller.Web.Data;
+using SystemInstaller.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
@@ -12,9 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Entity Framework DbContext mit SQL Server
-builder.Services.AddDbContext<SystemInstallerDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add Infrastructure and Application layers
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
 
 // Authentication
 builder.Services.AddAuthentication(options =>
@@ -57,15 +57,10 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Register custom services
-builder.Services.AddHttpClient<AgentApiClient>();
-builder.Services.AddSingleton<AgentApiClient>();
-// InstallationService wird später angepasst (Scoped)
-builder.Services.AddScoped<InstallationService>();
-
-// Tenant Management Services
-builder.Services.AddScoped<TenantService>();
-builder.Services.AddScoped<InvitationService>();
+// Legacy services (to be migrated gradually)
+builder.Services.AddScoped<SystemInstaller.Web.Services.TenantService>();
+builder.Services.AddScoped<SystemInstaller.Web.Services.InvitationService>();
+builder.Services.AddScoped<SystemInstaller.Web.Services.InstallationService>();
 
 
 var app = builder.Build();
