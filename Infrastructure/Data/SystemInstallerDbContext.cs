@@ -39,14 +39,14 @@ public class SystemInstallerDbContext : DbContext
             });
             
             // Configure collections
-            entity.HasMany(typeof(TenantUser), "_tenantUsers")
-                .WithOne("Tenant")
-                .HasForeignKey("TenantId")
+            entity.HasMany(e => e.TenantUsers)
+                .WithOne(tu => tu.Tenant)
+                .HasForeignKey(tu => tu.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
                 
-            entity.HasMany(typeof(InstallationEnvironment), "_environments")
-                .WithOne("Tenant")
-                .HasForeignKey("TenantId")
+            entity.HasMany(e => e.Environments)
+                .WithOne(env => env.Tenant)
+                .HasForeignKey(env => env.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -141,10 +141,10 @@ public class SystemInstallerDbContext : DbContext
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt);
             
-            // Configure collections
-            entity.HasMany(typeof(InstallationTask), "_tasks")
-                .WithOne("Environment")
-                .HasForeignKey("EnvironmentId")
+            // Configure Tasks navigation property
+            entity.HasMany(e => e.Tasks)
+                .WithOne(t => t.Environment)
+                .HasForeignKey(t => t.EnvironmentId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -161,11 +161,12 @@ public class SystemInstallerDbContext : DbContext
             entity.Property(e => e.ErrorMessage);
             entity.Property(e => e.Progress).IsRequired();
             
-            // Configure collections
-            entity.HasMany(typeof(string), "_logs")
-                .WithOne()
-                .HasForeignKey("InstallationTaskId")
-                .OnDelete(DeleteBehavior.Cascade);
+            // Configure Logs as JSON column
+            entity.Property(e => e.Logs)
+                .HasConversion(
+                    logs => System.Text.Json.JsonSerializer.Serialize(logs, (System.Text.Json.JsonSerializerOptions?)null),
+                    logs => System.Text.Json.JsonSerializer.Deserialize<List<string>>(logs, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                .HasColumnType("nvarchar(max)");
         });
     }
 }

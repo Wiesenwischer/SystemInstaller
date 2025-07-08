@@ -129,20 +129,20 @@
         recentTasks = taskList.Take(5).ToList();
         
         totalTasks = taskList.Count;
-        completedTasks = taskList.Count(t => t.Status == Domain.ValueObjects.InstallationStatus.Completed);
-        runningTasks = taskList.Count(t => t.Status == Domain.ValueObjects.InstallationStatus.Running);
-        failedTasks = taskList.Count(t => t.Status == Domain.ValueObjects.InstallationStatus.Failed);
+        completedTasks = taskList.Count(t => t.Status == SystemInstaller.Domain.Enums.InstallationStatus.Completed);
+        runningTasks = taskList.Count(t => t.Status == SystemInstaller.Domain.Enums.InstallationStatus.Running);
+        failedTasks = taskList.Count(t => t.Status == SystemInstaller.Domain.Enums.InstallationStatus.Failed);
     }
 
-    private string GetStatusBadgeClass(Domain.ValueObjects.InstallationStatus status)
+    private string GetStatusBadgeClass(SystemInstaller.Domain.Enums.InstallationStatus status)
     {
         return status switch
         {
-            Domain.ValueObjects.InstallationStatus.Pending => "bg-secondary",
-            Domain.ValueObjects.InstallationStatus.Running => "bg-warning",
-            Domain.ValueObjects.InstallationStatus.Completed => "bg-success",
-            Domain.ValueObjects.InstallationStatus.Failed => "bg-danger",
-            Domain.ValueObjects.InstallationStatus.Cancelled => "bg-dark",
+            SystemInstaller.Domain.Enums.InstallationStatus.Pending => "bg-secondary",
+            SystemInstaller.Domain.Enums.InstallationStatus.Running => "bg-warning",
+            SystemInstaller.Domain.Enums.InstallationStatus.Completed => "bg-success",
+            SystemInstaller.Domain.Enums.InstallationStatus.Failed => "bg-danger",
+            SystemInstaller.Domain.Enums.InstallationStatus.Cancelled => "bg-dark",
             _ => "bg-secondary"
         };
     }

@@ -1,4 +1,5 @@
 using SystemInstaller.Domain.ValueObjects;
+using SystemInstaller.Domain.Enums;
 
 namespace SystemInstaller.Application.DTOs;
 
@@ -27,12 +28,6 @@ public class UserInvitationResultDto
     public DateTime? UsedAt { get; set; }
     public string? InvitedByUserId { get; set; }
     public string? TenantName { get; set; }
-}
-
-public class AcceptInvitationDto
-{
-    public string Token { get; set; } = null!;
-    public string UserId { get; set; } = null!;
 }
 
 public class CreateInstallationTaskDto

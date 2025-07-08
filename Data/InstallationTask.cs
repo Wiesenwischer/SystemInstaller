@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SystemInstaller.Domain.Enums;
 
 namespace SystemInstaller.Web.Data;
 

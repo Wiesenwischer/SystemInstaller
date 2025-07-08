@@ -111,11 +111,7 @@
                 return;
             }
             
-            var acceptDto = new AcceptInvitationDto
-            {
-                Token = Token,
-                UserId = userId
-            };
+            var acceptDto = new AcceptInvitationDto(Token, userId);
             
             await InvitationService.AcceptInvitationAsync(acceptDto);
             isAccepted = true;

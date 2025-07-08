@@ -9,11 +9,9 @@ public class InstallationEnvironment
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     
-    private readonly List<InstallationTask> _tasks = new();
-    
     // Navigation Properties
     public Tenant Tenant { get; private set; } = null!;
-    public IReadOnlyList<InstallationTask> Tasks => _tasks.AsReadOnly();
+    public List<InstallationTask> Tasks { get; private set; } = new();
     
     private InstallationEnvironment() { } // EF Core
     
@@ -61,23 +59,23 @@ public class InstallationEnvironment
     
     public void AddTask(InstallationTask task)
     {
-        _tasks.Add(task);
+        Tasks.Add(task);
         UpdatedAt = DateTime.UtcNow;
     }
     
     public void RemoveTask(Guid taskId)
     {
-        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        var task = Tasks.FirstOrDefault(t => t.Id == taskId);
         if (task != null)
         {
-            _tasks.Remove(task);
+            Tasks.Remove(task);
             UpdatedAt = DateTime.UtcNow;
         }
     }
     
     public void UpdateTask(Guid taskId, string name, string description)
     {
-        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        var task = Tasks.FirstOrDefault(t => t.Id == taskId);
         if (task != null)
         {
             task.UpdateName(name);

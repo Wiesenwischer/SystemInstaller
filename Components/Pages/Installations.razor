@@ -1,7 +1,7 @@
 @page "/installations"
 @using SystemInstaller.Application.Interfaces
 @using SystemInstaller.Application.DTOs
-@using DomainInstallationStatus = SystemInstaller.Domain.ValueObjects.InstallationStatus
+@using DomainInstallationStatus = SystemInstaller.Domain.Enums.InstallationStatus
 @inject IInstallationApplicationService InstallationService
 @inject NavigationManager Navigation
 @implements IDisposable

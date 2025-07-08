@@ -19,7 +19,7 @@ public record Email
             throw new ArgumentException("Email cannot exceed 100 characters", nameof(value));
         
         if (!EmailRegex.IsMatch(value))
-            throw new ArgumentException("Invalid email format", nameof(value));
+            throw new ArgumentException($"Invalid email format: '{value}'", nameof(value));
         
         Value = value.ToLowerInvariant();
     }

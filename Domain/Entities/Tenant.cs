@@ -12,11 +12,8 @@ public class Tenant
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     
-    private readonly List<TenantUser> _tenantUsers = new();
-    private readonly List<InstallationEnvironment> _environments = new();
-    
-    public IReadOnlyList<TenantUser> TenantUsers => _tenantUsers.AsReadOnly();
-    public IReadOnlyList<InstallationEnvironment> Environments => _environments.AsReadOnly();
+    public List<TenantUser> TenantUsers { get; private set; } = new();
+    public List<InstallationEnvironment> Environments { get; private set; } = new();
     
     private Tenant() { } // EF Core
     
@@ -77,35 +74,35 @@ public class Tenant
     
     public void AddUser(TenantUser user)
     {
-        if (_tenantUsers.Any(u => u.UserId == user.UserId))
+        if (TenantUsers.Any(u => u.UserId == user.UserId))
             throw new InvalidOperationException("User is already a member of this tenant");
         
-        _tenantUsers.Add(user);
+        TenantUsers.Add(user);
         UpdatedAt = DateTime.UtcNow;
     }
     
     public void RemoveUser(string userId)
     {
-        var user = _tenantUsers.FirstOrDefault(u => u.UserId == userId);
+        var user = TenantUsers.FirstOrDefault(u => u.UserId == userId);
         if (user != null)
         {
-            _tenantUsers.Remove(user);
+            TenantUsers.Remove(user);
             UpdatedAt = DateTime.UtcNow;
         }
     }
     
     public void AddEnvironment(InstallationEnvironment environment)
     {
-        _environments.Add(environment);
+        Environments.Add(environment);
         UpdatedAt = DateTime.UtcNow;
     }
     
     public void RemoveEnvironment(Guid environmentId)
     {
-        var environment = _environments.FirstOrDefault(e => e.Id == environmentId);
+        var environment = Environments.FirstOrDefault(e => e.Id == environmentId);
         if (environment != null)
         {
-            _environments.Remove(environment);
+            Environments.Remove(environment);
             UpdatedAt = DateTime.UtcNow;
         }
     }

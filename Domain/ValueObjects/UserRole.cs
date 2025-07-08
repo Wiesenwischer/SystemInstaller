@@ -2,10 +2,12 @@ namespace SystemInstaller.Domain.ValueObjects;
 
 public record UserRole
 {
+    private static readonly HashSet<string> ValidRoles = new() { "Admin", "Customer", "Member", "Developer" };
+    
     public static readonly UserRole Admin = new("Admin");
     public static readonly UserRole Customer = new("Customer");
-    
-    private static readonly HashSet<string> ValidRoles = new() { "Admin", "Customer" };
+    public static readonly UserRole Member = new("Member");
+    public static readonly UserRole Developer = new("Developer");
     
     public string Value { get; init; }
     
@@ -22,6 +24,8 @@ public record UserRole
     
     public bool IsAdmin => Value == Admin.Value;
     public bool IsCustomer => Value == Customer.Value;
+    public bool IsMember => Value == Member.Value;
+    public bool IsDeveloper => Value == Developer.Value;
     
     public static implicit operator string(UserRole role) => role.Value;
     public static implicit operator UserRole(string role) => new(role);

@@ -65,7 +65,7 @@ public class InstallationTaskRepository : IInstallationTaskRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<InstallationTask>> GetByStatusAsync(Domain.ValueObjects.InstallationStatus status)
+    public async Task<IEnumerable<InstallationTask>> GetByStatusAsync(SystemInstaller.Domain.Enums.InstallationStatus status)
     {
         return await _context.Tasks
             .Include(t => t.Environment)

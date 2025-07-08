@@ -1,6 +1,7 @@
 using SystemInstaller.Application.DTOs;
 using SystemInstaller.Application.Interfaces;
 using SystemInstaller.Web.Data;
+using SystemInstaller.Domain.Enums;
 
 namespace SystemInstaller.Infrastructure.Adapters;
 
@@ -108,7 +109,7 @@ public class LegacyInstallationServiceAdapter
             EnvironmentId = dto.EnvironmentId,
             Name = dto.Name,
             Description = dto.Description,
-            Status = (SystemInstaller.Web.Data.InstallationStatus)dto.Status, // Explicit cast
+            Status = (InstallationStatus)dto.Status, // Explicit cast
             CreatedAt = dto.CreatedAt,
             StartedAt = dto.StartedAt,
             CompletedAt = dto.CompletedAt,

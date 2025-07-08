@@ -1,42 +1,30 @@
-using SystemInstaller.Domain.ValueObjects;
+using SystemInstaller.Domain.Enums;
 
 namespace SystemInstaller.Domain.Entities;
 
 public class InstallationTask
 {
-    public Guid Id { get; private set; }
-    public Guid EnvironmentId { get; private set; }
-    public string Name { get; private set; } = null!;
-    public string Description { get; private set; } = null!;
-    public InstallationStatus Status { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public DateTime? StartedAt { get; private set; }
-    public DateTime? CompletedAt { get; private set; }
-    public string? ErrorMessage { get; private set; }
-    public int Progress { get; private set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid InstallationId { get; set; }
+    public Guid EnvironmentId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public InstallationStatus Status { get; set; } = InstallationStatus.Pending;
+    public int Order { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? StartedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public string? ErrorMessage { get; set; }
+    public int Progress { get; set; } = 0; // 0-100
+    public List<string> Logs { get; set; } = new();
     
-    private readonly List<string> _logs = new();
-    
-    // Navigation Properties
-    public InstallationEnvironment Environment { get; private set; } = null!;
-    public IReadOnlyList<string> Logs => _logs.AsReadOnly();
-    
-    private InstallationTask() { } // EF Core
-    
+    // Navigation properties
+    public Installation Installation { get; set; } = null!;
+    public InstallationEnvironment Environment { get; set; } = null!;
+
+    // Constructor for creating a new task
     public InstallationTask(Guid environmentId, string name, string description)
     {
-        if (environmentId == Guid.Empty)
-            throw new ArgumentException("EnvironmentId cannot be empty", nameof(environmentId));
-        
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Task name cannot be empty", nameof(name));
-        
-        if (name.Length > 100)
-            throw new ArgumentException("Task name cannot exceed 100 characters", nameof(name));
-        
-        if (description.Length > 500)
-            throw new ArgumentException("Description cannot exceed 500 characters", nameof(description));
-        
         Id = Guid.NewGuid();
         EnvironmentId = environmentId;
         Name = name;
@@ -44,89 +32,69 @@ public class InstallationTask
         Status = InstallationStatus.Pending;
         CreatedAt = DateTime.UtcNow;
         Progress = 0;
+        Logs = new List<string>();
     }
-    
-    public void UpdateName(string name)
+
+    // Parameterless constructor for EF Core
+    public InstallationTask()
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Task name cannot be empty", nameof(name));
-        
-        if (name.Length > 100)
-            throw new ArgumentException("Task name cannot exceed 100 characters", nameof(name));
-        
-        Name = name;
+        Logs = new List<string>();
     }
-    
-    public void UpdateDescription(string description)
-    {
-        if (description.Length > 500)
-            throw new ArgumentException("Description cannot exceed 500 characters", nameof(description));
-        
-        Description = description;
-    }
-    
+
+    // Domain methods
     public void Start()
     {
         if (Status != InstallationStatus.Pending)
-            throw new InvalidOperationException($"Cannot start task in {Status} status");
-        
+            throw new InvalidOperationException($"Cannot start task in {Status} state");
+            
         Status = InstallationStatus.Running;
         StartedAt = DateTime.UtcNow;
-        Progress = 0;
     }
-    
-    public void UpdateProgress(int progress, string? logMessage = null)
-    {
-        if (progress < 0 || progress > 100)
-            throw new ArgumentException("Progress must be between 0 and 100", nameof(progress));
-        
-        Progress = progress;
-        
-        if (!string.IsNullOrWhiteSpace(logMessage))
-        {
-            AddLog(logMessage);
-        }
-    }
-    
+
     public void Complete()
     {
         if (Status != InstallationStatus.Running)
-            throw new InvalidOperationException($"Cannot complete task in {Status} status");
-        
+            throw new InvalidOperationException($"Cannot complete task in {Status} state");
+            
         Status = InstallationStatus.Completed;
         CompletedAt = DateTime.UtcNow;
         Progress = 100;
     }
-    
+
     public void Fail(string errorMessage)
     {
-        if (Status != InstallationStatus.Running)
-            throw new InvalidOperationException($"Cannot fail task in {Status} status");
-        
         Status = InstallationStatus.Failed;
-        CompletedAt = DateTime.UtcNow;
         ErrorMessage = errorMessage;
+        CompletedAt = DateTime.UtcNow;
     }
-    
+
     public void Cancel()
     {
-        if (Status != InstallationStatus.Running && Status != InstallationStatus.Pending)
-            throw new InvalidOperationException($"Cannot cancel task in {Status} status");
-        
+        if (Status == InstallationStatus.Completed)
+            throw new InvalidOperationException("Cannot cancel a completed task");
+            
         Status = InstallationStatus.Cancelled;
         CompletedAt = DateTime.UtcNow;
     }
-    
-    public void AddLog(string message)
+
+    public void UpdateProgress(int progress)
     {
-        if (string.IsNullOrWhiteSpace(message))
-            return;
-        
-        _logs.Add($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] {message}");
+        if (progress < 0 || progress > 100)
+            throw new ArgumentException("Progress must be between 0 and 100");
+            
+        Progress = progress;
     }
-    
-    public void ClearLogs()
+
+    public void UpdateName(string name)
     {
-        _logs.Clear();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be empty");
+            
+        Name = name;
+    }
+
+    public void UpdateDescription(string description)
+    {
+        Description = description ?? string.Empty;
     }
 }

@@ -79,11 +79,7 @@ public class LegacyInvitationServiceAdapter
 
     public async Task<bool> AcceptInvitationAsync(string token, string userId)
     {
-        var dto = new AcceptInvitationDto
-        {
-            Token = token,
-            UserId = userId
-        };
+        var dto = new AcceptInvitationDto(token, userId);
 
         return await _userInvitationService.AcceptInvitationAsync(dto);
     }

@@ -3,6 +3,7 @@ using SystemInstaller.Application.Interfaces;
 using SystemInstaller.Domain.Entities;
 using SystemInstaller.Domain.Repositories;
 using SystemInstaller.Domain.ValueObjects;
+using SystemInstaller.Domain.Enums;
 using SystemInstaller.Web.Services;
 
 namespace SystemInstaller.Application.UseCases;
@@ -201,7 +202,8 @@ public class InstallationApplicationService : IInstallationApplicationService
                 await Task.Delay(2000 + random.Next(1000, 3000)); // Random delay between steps
 
                 var progress = (i + 1) * 100 / steps.Length;
-                task.UpdateProgress(progress, $"{steps[i]}... ({progress}%)");
+                task.UpdateProgress(progress);
+                task.Logs.Add($"{steps[i]}... ({progress}%)");
                 await _taskRepository.UpdateAsync(task);
                 
                 var environment = await _environmentRepository.GetByIdAsync(task.EnvironmentId);
