@@ -1,7 +1,8 @@
 @page "/installations/{TaskId:guid}"
-@using SystemInstaller.Web.Services
-@using SystemInstaller.Web.Data
-@inject InstallationService InstallationService
+@using SystemInstaller.Application.Interfaces
+@using SystemInstaller.Application.DTOs
+@using InstallationStatus = SystemInstaller.Domain.ValueObjects.InstallationStatus
+@inject IInstallationApplicationService InstallationService
 @inject NavigationManager Navigation
 @implements IDisposable
 
@@ -212,31 +213,31 @@ else
 @code {
     [Parameter] public Guid TaskId { get; set; }
     
-    private InstallationTask? task;
+    private InstallationTaskResultDto? task;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         InstallationService.TaskUpdated += OnTaskUpdated;
-        LoadTask();
+        await LoadTask();
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        LoadTask();
+        await LoadTask();
     }
 
-    private void LoadTask()
+    private async Task LoadTask()
     {
-        task = InstallationService.GetTask(TaskId);
+        task = await InstallationService.GetTaskAsync(TaskId);
     }
 
-    private void OnTaskUpdated(object? sender, InstallationTask updatedTask)
+    private void OnTaskUpdated(object? sender, InstallationTaskResultDto updatedTask)
     {
         if (updatedTask.Id == TaskId)
         {
             InvokeAsync(() =>
             {
-                LoadTask();
+                task = updatedTask;
                 StateHasChanged();
             });
         }
@@ -258,9 +259,9 @@ else
         }
     }
 
-    private void RefreshLogs()
+    private async Task RefreshLogs()
     {
-        LoadTask();
+        await LoadTask();
         StateHasChanged();
     }
 
@@ -268,11 +269,14 @@ else
     {
         if (task != null)
         {
-            var newTask = await InstallationService.CreateTaskAsync(
-                $"{task.Name} (Copy)",
-                task.Description,
-                task.EnvironmentId
-            );
+            var createDto = new CreateInstallationTaskDto
+            {
+                Name = $"{task.Name} (Copy)",
+                Description = task.Description,
+                EnvironmentId = task.EnvironmentId
+            };
+            
+            var newTask = await InstallationService.CreateTaskAsync(createDto);
             Navigation.NavigateTo($"/installations/{newTask.Id}");
         }
     }
@@ -289,7 +293,7 @@ else
         }
     }
 
-    private string GetStatusBadgeClass(Data.InstallationStatus status)
+    private string GetStatusBadgeClass(InstallationStatus status)
     {
         return status switch
         {
@@ -302,7 +306,7 @@ else
         };
     }
 
-    private string GetProgressBarClass(Data.InstallationStatus status)
+    private string GetProgressBarClass(InstallationStatus status)
     {
         return status switch
         {
