@@ -12,7 +12,7 @@ using SystemInstaller.Domain.Repositories;
 using SystemInstaller.Domain.Entities;
 using SystemInstaller.Domain.ValueObjects;
 using SystemInstaller.Domain.Enums;
-using SystemInstaller.Infrastructure.Services;
+using SystemInstaller.Tests.Mocks;
 using Xunit;
 
 namespace SystemInstaller.Tests;
@@ -36,7 +36,7 @@ public class InstallationApplicationServiceIntegrationTests : IDisposable
         
         // Add other services
         services.AddHttpClient(); // For AgentApiClient
-        services.AddScoped<IAgentApiClient, AgentApiClient>();
+        services.AddScoped<IAgentApiClient, MockAgentApiClient>();
         services.AddLogging();
         
         // Add application service
@@ -101,23 +101,29 @@ public class InstallationApplicationServiceIntegrationTests : IDisposable
             Name = "StartTask",
             Description = "desc"
         };
-        var task = await _installationService.CreateTaskAsync(taskDto);
+        var createdTask = await _installationService.CreateTaskAsync(taskDto);
 
         // Start the installation
-        var startResult = await _installationService.StartInstallationAsync(task.Id);
+        var startResult = await _installationService.StartInstallationAsync(createdTask.Id);
         Assert.True(startResult);
 
         // Verify task is running
-        var runningTask = await _installationService.GetTaskAsync(task.Id);
+        var runningTask = await _installationService.GetTaskAsync(createdTask.Id);
         Assert.NotNull(runningTask);
         Assert.Equal(InstallationStatus.Running, runningTask.Status);
 
+        // Small delay to avoid DbContext concurrency issues
+        await Task.Delay(10);
+
         // Cancel the installation
-        var cancelResult = await _installationService.CancelInstallationAsync(task.Id);
+        var cancelResult = await _installationService.CancelInstallationAsync(createdTask.Id);
         Assert.True(cancelResult);
 
+        // Small delay to ensure state change is persisted
+        await Task.Delay(10);
+
         // Verify task is cancelled
-        var cancelledTask = await _installationService.GetTaskAsync(task.Id);
+        var cancelledTask = await _installationService.GetTaskAsync(createdTask.Id);
         Assert.NotNull(cancelledTask);
         Assert.Equal(InstallationStatus.Cancelled, cancelledTask.Status);
     }

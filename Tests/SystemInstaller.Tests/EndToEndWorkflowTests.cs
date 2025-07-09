@@ -9,6 +9,7 @@ using SystemInstaller.Application.Interfaces;
 using SystemInstaller.Infrastructure.Data;
 using SystemInstaller.Infrastructure.Repositories;
 using SystemInstaller.Infrastructure.Services;
+using SystemInstaller.Tests.Mocks;
 using SystemInstaller.Domain.Repositories;
 using SystemInstaller.Domain.Services;
 using SystemInstaller.Domain.Entities;
@@ -47,7 +48,7 @@ public class EndToEndWorkflowTests : IDisposable
         
         // Add other services
         services.AddHttpClient(); // For AgentApiClient
-        services.AddScoped<IAgentApiClient, AgentApiClient>();
+        services.AddScoped<IAgentApiClient, MockAgentApiClient>();
         services.AddLogging();
         
         // Add application services
