@@ -15,12 +15,12 @@
         "description": "Administrator role"
       },
       {
-        "name": "user",
-        "description": "Standard user role"
+        "name": "customer",
+        "description": "Customer role"
       }
     ]
   },
-  "defaultRoles": ["user"],
+  "defaultRoles": ["customer"],
   "requiredCredentials": ["password"],
   "clients": [
     {
@@ -61,23 +61,23 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["admin", "user"]
+      "realmRoles": ["admin"]
     },
     {
-      "username": "user",
+      "username": "customer",
       "enabled": true,
       "emailVerified": true,
       "firstName": "Test",
-      "lastName": "User",
-      "email": "user@systeminstaller.local",
+      "lastName": "Customer",
+      "email": "customer@systeminstaller.local",
       "credentials": [
         {
           "type": "password",
-          "value": "user123",
+          "value": "customer123",
           "temporary": false
         }
       ],
-      "realmRoles": ["user"]
+      "realmRoles": ["customer"]
     }
   ]
 }

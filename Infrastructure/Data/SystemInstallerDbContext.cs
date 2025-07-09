@@ -12,6 +12,7 @@ public class SystemInstallerDbContext : DbContext
     public DbSet<TenantUser> TenantUsers { get; set; }
     public DbSet<UserInvitation> UserInvitations { get; set; }
     public DbSet<InstallationEnvironment> Environments { get; set; }
+    public DbSet<Installation> Installation { get; set; }
     public DbSet<InstallationTask> Tasks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -148,6 +149,23 @@ public class SystemInstallerDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // Installation Configuration
+        modelBuilder.Entity<Installation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Version).IsRequired();
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.StartedAt);
+            entity.Property(e => e.CompletedAt);
+            
+            // Configure Tasks navigation property
+            entity.HasMany(e => e.Tasks)
+                .WithOne(t => t.Installation)
+                .HasForeignKey(t => t.InstallationId)
+                .OnDelete(DeleteBehavior.NoAction); // No cascade to avoid conflict
+        });
+
         // InstallationTask Configuration
         modelBuilder.Entity<InstallationTask>(entity =>
         {
@@ -155,11 +173,18 @@ public class SystemInstallerDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
             entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.Order).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.StartedAt);
             entity.Property(e => e.CompletedAt);
             entity.Property(e => e.ErrorMessage);
             entity.Property(e => e.Progress).IsRequired();
+            
+            // Configure Environment relationship (via Installation)
+            entity.HasOne(t => t.Environment)
+                .WithMany(e => e.Tasks)
+                .HasForeignKey(t => t.EnvironmentId)
+                .OnDelete(DeleteBehavior.Cascade);
             
             // Configure Logs as JSON column
             entity.Property(e => e.Logs)

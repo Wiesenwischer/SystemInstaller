@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SystemInstaller.IntegrationTests.TestBase;
 using SystemInstaller.IntegrationTests.Utilities;
 using SystemInstaller.IntegrationTests.Mocks;
-using SystemInstaller.Components.Pages;
+using SystemInstaller.Web.Components.Pages;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components;
 

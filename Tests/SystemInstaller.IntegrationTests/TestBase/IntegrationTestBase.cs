@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SystemInstaller.Infrastructure.Persistence;
+using SystemInstaller.Infrastructure.Data;
 using Bunit;
 using Microsoft.Extensions.Logging;
 

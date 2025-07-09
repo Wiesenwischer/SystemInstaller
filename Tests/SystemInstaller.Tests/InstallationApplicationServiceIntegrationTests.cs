@@ -5,13 +5,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SystemInstaller.Application.UseCases;
 using SystemInstaller.Application.DTOs;
+using SystemInstaller.Application.Interfaces;
 using SystemInstaller.Infrastructure.Data;
 using SystemInstaller.Infrastructure.Repositories;
 using SystemInstaller.Domain.Repositories;
 using SystemInstaller.Domain.Entities;
 using SystemInstaller.Domain.ValueObjects;
 using SystemInstaller.Domain.Enums;
-using SystemInstaller.Web.Services;
+using SystemInstaller.Infrastructure.Services;
 using Xunit;
 
 namespace SystemInstaller.Tests;
@@ -35,7 +36,7 @@ public class InstallationApplicationServiceIntegrationTests : IDisposable
         
         // Add other services
         services.AddHttpClient(); // For AgentApiClient
-        services.AddScoped<AgentApiClient>();
+        services.AddScoped<IAgentApiClient, AgentApiClient>();
         services.AddLogging();
         
         // Add application service

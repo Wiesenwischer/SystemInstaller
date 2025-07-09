@@ -6,7 +6,6 @@ using SystemInstaller.Domain.Services;
 using SystemInstaller.Infrastructure.Data;
 using SystemInstaller.Infrastructure.Repositories;
 using SystemInstaller.Infrastructure.Services;
-using SystemInstaller.Infrastructure.Adapters;
 
 namespace SystemInstaller.Infrastructure;
 
@@ -27,11 +26,14 @@ public static class DependencyInjection
 
         // Infrastructure Services
         services.AddScoped<IEmailService, EmailService>();
-
-        // Legacy Adapters (for gradual migration)
-        services.AddScoped<LegacyTenantServiceAdapter>();
-        services.AddScoped<LegacyInvitationServiceAdapter>();
-        services.AddScoped<LegacyInstallationServiceAdapter>();
+        services.AddHttpClient<AgentApiClient>();
+        services.AddScoped<IAgentApiClient>(provider => 
+        {
+            var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient(nameof(AgentApiClient));
+            var logger = provider.GetRequiredService<ILogger<AgentApiClient>>();
+            return new AgentApiClient(httpClient, logger);
+        });
 
         return services;
     }

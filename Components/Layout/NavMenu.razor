@@ -4,7 +4,17 @@
         <AuthorizeView>
             <Authorized>
                 <div class="navbar-nav ms-auto">
-                    <span class="navbar-text me-3">Willkommen, @(context.User.Identity?.Name ?? "Benutzer")</span>
+                    <span class="navbar-text me-3">
+                        Willkommen, @(context.User.Identity?.Name ?? "Benutzer")
+                        @{
+                            var userRole = "customer"; // Default role
+                            if (context.User.IsInRole("admin"))
+                            {
+                                userRole = "admin";
+                            }
+                        }
+                        <span class="badge bg-@(userRole == "admin" ? "danger" : "info") ms-2">@userRole</span>
+                    </span>
                     <form method="post" action="/logout" class="d-inline">
                         <button type="submit" class="btn btn-outline-light btn-sm">Abmelden</button>
                     </form>
@@ -49,7 +59,7 @@
             </Authorized>
             <NotAuthorized>
                 <div class="nav-item px-3">
-                    <a class="nav-link" href="/login">
+                    <a class="nav-link" href="/Account/Login">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Anmelden
                     </a>
                 </div>

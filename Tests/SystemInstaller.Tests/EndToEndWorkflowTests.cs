@@ -14,7 +14,6 @@ using SystemInstaller.Domain.Services;
 using SystemInstaller.Domain.Entities;
 using SystemInstaller.Domain.ValueObjects;
 using SystemInstaller.Domain.Enums;
-using SystemInstaller.Web.Services;
 using Xunit;
 
 namespace SystemInstaller.Tests;
@@ -48,7 +47,7 @@ public class EndToEndWorkflowTests : IDisposable
         
         // Add other services
         services.AddHttpClient(); // For AgentApiClient
-        services.AddScoped<AgentApiClient>();
+        services.AddScoped<IAgentApiClient, AgentApiClient>();
         services.AddLogging();
         
         // Add application services

@@ -31,29 +31,15 @@ public static class TestDataFactory
         };
     }
 
-    public static Installation CreateInstallation(Guid environmentId, string version = "1.0.0")
-    {
-        return new Installation
-        {
-            Id = Guid.NewGuid(),
-            EnvironmentId = environmentId,
-            Version = version,
-            Status = Domain.Enums.InstallationStatus.Pending,
-            CreatedAt = DateTime.UtcNow,
-            Tasks = new List<InstallationTask>()
-        };
-    }
-
-    public static InstallationTask CreateInstallationTask(Guid installationId, string name = "Test Task")
+    public static InstallationTask CreateInstallationTask(Guid environmentId, string name = "Test Task")
     {
         return new InstallationTask
         {
             Id = Guid.NewGuid(),
-            InstallationId = installationId,
+            EnvironmentId = environmentId,
             Name = name,
             Description = "Test Task Description",
             Status = Domain.Enums.InstallationStatus.Pending,
-            Order = 1,
             CreatedAt = DateTime.UtcNow
         };
     }

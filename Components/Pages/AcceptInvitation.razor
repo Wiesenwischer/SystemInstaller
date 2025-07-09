@@ -49,7 +49,7 @@
                             </Authorized>
                             <NotAuthorized>
                                 <p class="text-muted">Sie müssen sich anmelden, um diese Einladung anzunehmen.</p>
-                                <a href="/login" class="btn btn-primary">Anmelden</a>
+                                <a href="/Account/Login" class="btn btn-primary">Anmelden</a>
                             </NotAuthorized>
                         </AuthorizeView>
                     }
@@ -107,7 +107,7 @@
             
             if (string.IsNullOrEmpty(userId))
             {
-                Navigation.NavigateTo("/login");
+                Navigation.NavigateTo("/Account/Login");
                 return;
             }
             

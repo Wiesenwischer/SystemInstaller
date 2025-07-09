@@ -4,7 +4,6 @@ using SystemInstaller.Domain.Entities;
 using SystemInstaller.Domain.Repositories;
 using SystemInstaller.Domain.ValueObjects;
 using SystemInstaller.Domain.Enums;
-using SystemInstaller.Web.Services;
 
 namespace SystemInstaller.Application.UseCases;
 
@@ -13,7 +12,7 @@ public class InstallationApplicationService : IInstallationApplicationService
     private readonly IInstallationEnvironmentRepository _environmentRepository;
     private readonly IInstallationTaskRepository _taskRepository;
     private readonly ITenantRepository _tenantRepository;
-    private readonly AgentApiClient _agentApiClient;
+    private readonly IAgentApiClient _agentApiClient;
     private readonly ILogger<InstallationApplicationService> _logger;
 
     public event EventHandler<InstallationTaskResultDto>? TaskUpdated;
@@ -22,7 +21,7 @@ public class InstallationApplicationService : IInstallationApplicationService
         IInstallationEnvironmentRepository environmentRepository,
         IInstallationTaskRepository taskRepository,
         ITenantRepository tenantRepository,
-        AgentApiClient agentApiClient,
+        IAgentApiClient agentApiClient,
         ILogger<InstallationApplicationService> logger)
     {
         _environmentRepository = environmentRepository;

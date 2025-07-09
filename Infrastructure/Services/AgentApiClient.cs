@@ -1,6 +1,8 @@
-namespace SystemInstaller.Web.Services;
+using SystemInstaller.Application.Interfaces;
 
-public class AgentApiClient
+namespace SystemInstaller.Infrastructure.Services;
+
+public class AgentApiClient : IAgentApiClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<AgentApiClient> _logger;
@@ -31,13 +33,13 @@ public class AgentApiClient
         return true;
     }
 
-    public async Task<string[]> GetAvailableEnvironmentsAsync()
+    public async Task<string> GetInstallationStatusAsync(Guid taskId)
     {
-        _logger.LogInformation("Fetching available environments");
+        _logger.LogInformation("Getting installation status for task {TaskId}", taskId);
         
         // Stub implementation - will be implemented later to call actual agent API
-        await Task.Delay(100); // Simulate API call
+        await Task.Delay(50); // Simulate API call
         
-        return new[] { "Development", "Testing", "Staging", "Production" };
+        return "Running"; // Mock status
     }
 }

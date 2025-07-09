@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using Xunit;
 
 namespace SystemInstaller.IntegrationTests;
 
@@ -28,16 +29,15 @@ public class BasicIntegrationTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
-    public async Task Get_Login_ReturnsSuccess()
+    public async Task Get_AccountLogin_ReturnsRedirect()
     {
         // Arrange
         var client = _factory.CreateClient();
 
         // Act
-        var response = await client.GetAsync("/login");
+        var response = await client.GetAsync("/Account/Login");
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.OK || 
-                   response.StatusCode == HttpStatusCode.Redirect);
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
     }
 }
