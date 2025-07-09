@@ -1,4 +1,4 @@
-using SystemInstaller.Web.Components;
+using SystemInstaller.Components;
 using SystemInstaller.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SystemInstaller.Infrastructure.Data;
