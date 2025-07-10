@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SystemInstaller.IntegrationTests.TestBase;
 using SystemInstaller.IntegrationTests.Utilities;
 using SystemInstaller.IntegrationTests.Mocks;
-using SystemInstaller.Web.Components.Pages;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -23,7 +22,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
     public async Task NewEnvironment_ShouldDisplayForm()
     {
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = await Task.Run(() => RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>());
 
         // Assert
         Assert.Contains("Create New Environment", component.Markup);
@@ -48,7 +47,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
         await DbContext.SaveChangesAsync();
 
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = await Task.Run(() => RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>());
 
         // Assert
         var tenantSelect = component.Find("select[id='tenantId']");
@@ -69,8 +68,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
         await DbContext.SaveChangesAsync();
 
         // Act
-        var component = RenderComponent<NewEnvironment>(parameters => parameters
-            .Add(p => p.TenantId, tenant.Id.ToString()));
+        var component = RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>();
 
         // Assert
         var tenantSelect = component.Find("select[id='tenantId']");
@@ -86,7 +84,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
         await DbContext.SaveChangesAsync();
 
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>();
         var form = component.Find("form");
         
         // Try to submit without filling required fields
@@ -106,7 +104,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
         await DbContext.SaveChangesAsync();
 
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>();
         
         var nameInput = component.Find("input[id='name']");
         var descriptionTextarea = component.Find("textarea[id='description']");
@@ -137,12 +135,11 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
         await form.SubmitAsync();
 
         // Assert
-        var createdEnvironment = DbContext.InstallationEnvironments
+        var createdEnvironment = DbContext.Environments
             .FirstOrDefault(e => e.Name == "Test Environment");
         
         Assert.NotNull(createdEnvironment);
         Assert.Equal("Test Description", createdEnvironment.Description);
-        Assert.Equal("https://test.example.com", createdEnvironment.ServerUrl);
         Assert.Equal(tenant.Id, createdEnvironment.TenantId);
     }
 
@@ -155,7 +152,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
         await DbContext.SaveChangesAsync();
 
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>();
         
         var serverUrlInput = component.Find("input[id='serverUrl']");
         await serverUrlInput.ChangeAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs
@@ -176,16 +173,16 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
     {
         // Arrange
         var activeTenant = TestDataFactory.CreateTenant("Active Tenant");
-        activeTenant.IsActive = true;
+        activeTenant.Activate();
         
         var inactiveTenant = TestDataFactory.CreateTenant("Inactive Tenant");
-        inactiveTenant.IsActive = false;
+        inactiveTenant.Deactivate();
 
         await DbContext.Tenants.AddRangeAsync(activeTenant, inactiveTenant);
         await DbContext.SaveChangesAsync();
 
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>();
 
         // Assert
         Assert.Contains("Active Tenant", component.Markup);
@@ -196,7 +193,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
     public async Task NewEnvironment_ShouldShowCancelButton()
     {
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = await Task.Run(() => RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>());
 
         // Assert
         var cancelButton = component.Find("a:contains('Cancel')");
@@ -207,19 +204,19 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
     public async Task NewEnvironment_ShouldDisableSubmitWhenFormInvalid()
     {
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = await Task.Run(() => RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>());
 
         // Assert
         var submitButton = component.Find("button[type='submit']");
         Assert.True(submitButton.HasAttribute("disabled") || 
-                   submitButton.GetClasses().Contains("disabled"));
+                   submitButton.GetAttribute("class")?.Contains("disabled") == true);
     }
 
     [Fact]
     public async Task NewEnvironment_ShouldHandleNoTenantsAvailable()
     {
         // Act (no tenants in database)
-        var component = RenderComponent<NewEnvironment>();
+        var component = await Task.Run(() => RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>());
 
         // Assert
         Assert.Contains("No tenants available", component.Markup);
@@ -229,7 +226,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
     public async Task NewEnvironment_ShouldShowLoadingState()
     {
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = await Task.Run(() => RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>());
 
         // Assert - Component should handle loading state gracefully
         Assert.NotNull(component);
@@ -244,7 +241,7 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
         await DbContext.SaveChangesAsync();
 
         // Act
-        var component = RenderComponent<NewEnvironment>();
+        var component = RenderComponent<SystemInstaller.Components.Pages.NewEnvironment>();
         
         var nameInput = component.Find("input[id='name']");
         await nameInput.ChangeAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs
@@ -276,10 +273,16 @@ public class NewEnvironmentComponentTests : BlazorComponentTestBase
         await form.SubmitAsync();
 
         // Assert
-        var createdEnvironment = DbContext.InstallationEnvironments
+        var createdEnvironment = DbContext.Environments
             .FirstOrDefault(e => e.Name == "Test Environment");
         
         Assert.NotNull(createdEnvironment);
         Assert.Equal("Test Environment", createdEnvironment.Name); // Should be trimmed
+    }
+
+    // Explicitly qualify namespace for NewEnvironment
+    private SystemInstaller.Components.Pages.NewEnvironment GetNewEnvironmentComponent()
+    {
+        return new SystemInstaller.Components.Pages.NewEnvironment();
     }
 }

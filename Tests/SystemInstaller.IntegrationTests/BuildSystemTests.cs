@@ -1,4 +1,6 @@
 using SystemInstaller.IntegrationTests.TestBase;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SystemInstaller.IntegrationTests;
 
@@ -28,8 +30,8 @@ public class BuildSystemTests : BlazorComponentTestBase
         var serviceProvider = WebApplicationFactory.Services;
 
         // Assert
-        Assert.NotNull(serviceProvider.GetService<SystemInstaller.Application.Interfaces.ITenantApplicationService>());
-        Assert.NotNull(serviceProvider.GetService<SystemInstaller.Application.Interfaces.IInstallationApplicationService>());
-        Assert.NotNull(serviceProvider.GetService<SystemInstaller.Application.Interfaces.IUserInvitationApplicationService>());
+        Assert.NotNull(serviceProvider.GetRequiredService<SystemInstaller.Application.Interfaces.ITenantApplicationService>());
+        Assert.NotNull(serviceProvider.GetRequiredService<SystemInstaller.Application.Interfaces.IInstallationApplicationService>());
+        Assert.NotNull(serviceProvider.GetRequiredService<SystemInstaller.Application.Interfaces.IUserInvitationApplicationService>());
     }
 }

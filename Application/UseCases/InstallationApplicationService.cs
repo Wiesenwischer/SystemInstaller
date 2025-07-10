@@ -4,6 +4,7 @@ using SystemInstaller.Domain.Entities;
 using SystemInstaller.Domain.Repositories;
 using SystemInstaller.Domain.ValueObjects;
 using SystemInstaller.Domain.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace SystemInstaller.Application.UseCases;
 

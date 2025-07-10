@@ -20,13 +20,13 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
     {
         // Arrange
         var activeTenant1 = TestDataFactory.CreateTenant("Active Tenant 1");
-        activeTenant1.IsActive = true;
+        activeTenant1.Activate();
         
         var activeTenant2 = TestDataFactory.CreateTenant("Active Tenant 2");
-        activeTenant2.IsActive = true;
+        activeTenant2.Activate();
         
         var inactiveTenant = TestDataFactory.CreateTenant("Inactive Tenant");
-        inactiveTenant.IsActive = false;
+        inactiveTenant.Deactivate();
 
         await DbContext.Tenants.AddRangeAsync(activeTenant1, activeTenant2, inactiveTenant);
         await DbContext.SaveChangesAsync();
@@ -73,11 +73,11 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
     public async Task CreateTenantAsync_ShouldCreateNewTenant()
     {
         // Arrange
-        var createDto = new CreateTenantDto
-        {
-            Name = "New Tenant",
-            Description = "New Description"
-        };
+        var createDto = new CreateTenantDto(
+            "New Tenant",
+            "tenant@example.com",
+            "New Description"
+        );
 
         // Act
         var result = await _tenantService.CreateTenantAsync(createDto);
@@ -101,15 +101,14 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
         await DbContext.Tenants.AddAsync(tenant);
         await DbContext.SaveChangesAsync();
 
-        var updateDto = new UpdateTenantDto
-        {
-            Id = tenant.Id,
-            Name = "Updated Name",
-            Description = "Updated Description"
-        };
+        var updateDto = new UpdateTenantDto(
+            "Updated Name",
+            "Updated Description",
+            tenant.ContactEmail.Value
+        );
 
         // Act
-        var result = await _tenantService.UpdateTenantAsync(updateDto);
+        var result = await _tenantService.UpdateTenantAsync(tenant.Id, updateDto);
 
         // Assert
         Assert.NotNull(result);
@@ -117,6 +116,7 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
         Assert.Equal("Updated Description", result.Description);
 
         var dbTenant = await DbContext.Tenants.FindAsync(tenant.Id);
+        Assert.NotNull(dbTenant);
         Assert.Equal("Updated Name", dbTenant.Name);
         Assert.Equal("Updated Description", dbTenant.Description);
     }
@@ -126,7 +126,7 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
     {
         // Arrange
         var tenant = TestDataFactory.CreateTenant();
-        tenant.IsActive = true;
+        tenant.Activate();
         await DbContext.Tenants.AddAsync(tenant);
         await DbContext.SaveChangesAsync();
 
@@ -144,17 +144,14 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
     {
         // Arrange
         var tenant = TestDataFactory.CreateTenant("Detailed Tenant");
-        var user1 = TestDataFactory.CreateUser("user1@test.com", "User One");
-        var user2 = TestDataFactory.CreateUser("user2@test.com", "User Two");
         var environment = TestDataFactory.CreateEnvironment(tenant.Id, "Test Environment");
         var invitation = TestDataFactory.CreateUserInvitation(tenant.Id, "invite@test.com");
         
-        var tenantUser1 = TestDataFactory.CreateTenantUser(tenant.Id, user1.Id, "Admin");
-        var tenantUser2 = TestDataFactory.CreateTenantUser(tenant.Id, user2.Id, "Member");
+        var tenantUser1 = TestDataFactory.CreateTenantUser(tenant.Id, Guid.NewGuid().ToString(), "user1@test.com", "User", "One", "Admin");
+        var tenantUser2 = TestDataFactory.CreateTenantUser(tenant.Id, Guid.NewGuid().ToString(), "user2@test.com", "User", "Two", "Member");
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.Users.AddRangeAsync(user1, user2);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
+        await DbContext.Environments.AddAsync(environment);
         await DbContext.UserInvitations.AddAsync(invitation);
         await DbContext.TenantUsers.AddRangeAsync(tenantUser1, tenantUser2);
         await DbContext.SaveChangesAsync();
@@ -165,14 +162,14 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Detailed Tenant", result.Name);
-        Assert.Equal(2, result.Users.Count());
-        Assert.Equal(1, result.Environments.Count());
-        Assert.Equal(1, result.PendingInvitations.Count());
+        Assert.Equal(2, result.TenantUsers.Count());
+        Assert.Single(result.Environments);
+        // Note: PendingInvitations are not included in TenantDetailsDto
+        // They should be checked separately via IUserInvitationApplicationService
         
-        Assert.Contains(result.Users, u => u.Email == "user1@test.com" && u.Role == "Admin");
-        Assert.Contains(result.Users, u => u.Email == "user2@test.com" && u.Role == "Member");
+        Assert.Contains(result.TenantUsers, u => u.Email == "user1@test.com" && u.Role == "Admin");
+        Assert.Contains(result.TenantUsers, u => u.Email == "user2@test.com" && u.Role == "Member");
         Assert.Contains(result.Environments, e => e.Name == "Test Environment");
-        Assert.Contains(result.PendingInvitations, i => i.Email == "invite@test.com");
     }
 
     [Fact]
@@ -180,20 +177,19 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
     {
         // Arrange
         var tenant = TestDataFactory.CreateTenant();
-        var user = TestDataFactory.CreateUser("remove@test.com", "Remove User");
-        var tenantUser = TestDataFactory.CreateTenantUser(tenant.Id, user.Id, "Member");
+        var userId = Guid.NewGuid().ToString();
+        var tenantUser = TestDataFactory.CreateTenantUser(tenant.Id, userId, "remove@test.com", "Remove", "User", "Member");
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.Users.AddAsync(user);
         await DbContext.TenantUsers.AddAsync(tenantUser);
         await DbContext.SaveChangesAsync();
 
         // Act
-        await _tenantService.RemoveUserFromTenantAsync(tenant.Id, user.Id);
+        await _tenantService.RemoveUserFromTenantAsync(tenant.Id, userId);
 
         // Assert
         var removedTenantUser = DbContext.TenantUsers
-            .FirstOrDefault(tu => tu.TenantId == tenant.Id && tu.UserId == user.Id);
+            .FirstOrDefault(tu => tu.TenantId == tenant.Id && tu.UserId == userId);
         Assert.Null(removedTenantUser);
     }
 
@@ -202,21 +198,20 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
     {
         // Arrange
         var tenant = TestDataFactory.CreateTenant();
-        var user = TestDataFactory.CreateUser("role@test.com", "Role User");
-        var tenantUser = TestDataFactory.CreateTenantUser(tenant.Id, user.Id, "Member");
+        var userId = Guid.NewGuid().ToString();
+        var tenantUser = TestDataFactory.CreateTenantUser(tenant.Id, userId, "role@test.com", "Role", "User", "Member");
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.Users.AddAsync(user);
         await DbContext.TenantUsers.AddAsync(tenantUser);
         await DbContext.SaveChangesAsync();
 
         // Act
-        await _tenantService.UpdateUserRoleAsync(tenant.Id, user.Id, "Admin");
+        await _tenantService.UpdateUserRoleAsync(tenant.Id, userId, "Admin");
 
         // Assert
         var updatedTenantUser = DbContext.TenantUsers
-            .First(tu => tu.TenantId == tenant.Id && tu.UserId == user.Id);
-        Assert.Equal("Admin", updatedTenantUser.Role);
+            .First(tu => tu.TenantId == tenant.Id && tu.UserId == userId);
+        Assert.Equal("Admin", updatedTenantUser.Role.Value);
     }
 
     [Fact]
@@ -227,11 +222,11 @@ public class TenantApplicationServiceTests : BlazorComponentTestBase
         await DbContext.Tenants.AddAsync(existingTenant);
         await DbContext.SaveChangesAsync();
 
-        var createDto = new CreateTenantDto
-        {
-            Name = "Duplicate Name",
-            Description = "Different Description"
-        };
+        var createDto = new CreateTenantDto(
+            "Duplicate Name",
+            "duplicate@example.com",
+            "Different Description"
+        );
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(

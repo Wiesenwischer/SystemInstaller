@@ -7,7 +7,10 @@
     <RootNamespace>SystemInstaller</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <!-- Disable default content items to include Razor components and scoped CSS -->
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
@@ -25,6 +28,28 @@
     <Content Remove="Tests/**" />
     <EmbeddedResource Remove="Tests/**" />
     <None Remove="Tests/**" />
+    <Compile Remove="Domain/**" />
+    <Compile Remove="Application/**" />
+    <Compile Remove="Infrastructure/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Domain\SystemInstaller.Domain.csproj" />
+    <ProjectReference Include="Application\SystemInstaller.Application.csproj" />
+    <ProjectReference Include="Infrastructure\SystemInstaller.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Components\App.razor" />
+    <Content Include="Components\Routes.razor" />
+    <Content Include="Components\_Imports.razor" />
+    <Content Include="Components\Layout\MainLayout.razor" />
+    <Content Include="Components\Layout\NavMenu.razor" />
+    <Content Include="Components\Pages\*.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**/*.razor__virtual.cs" />
   </ItemGroup>
 
 </Project>

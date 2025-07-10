@@ -25,7 +25,6 @@ Ein Web-basiertes Dashboard zur Verwaltung von Docker-Environment-Installationen
 
 - Docker & Docker Compose
 - .NET 8.0 SDK (für lokale Entwicklung)
-- `jq` (für Keycloak Setup Script)
 
 ### 2. Container starten
 
@@ -37,37 +36,14 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
-### 3. Keycloak konfigurieren
-
-Nach dem ersten Start der Container:
-
-```bash
-# Keycloak Setup ausführen
-./setup-keycloak.sh
-```
-
-Das Script gibt ein **Client Secret** aus. Kopiere es und aktualisiere:
-
-- `appsettings.Development.json`
-- `appsettings.json` 
-- `docker-compose.yml`
-
-Ersetze `your-client-secret` mit dem generierten Secret.
-
-### 4. Web-App neu starten
-
-```bash
-docker-compose restart web
-```
-
-### 5. Anwendung verwenden
+### 3. Anwendung verwenden
 
 - **SystemInstaller Dashboard**: http://localhost:8081
 - **Keycloak Admin Console**: http://localhost:8080
 
 **Test-Login:**
-- Username: `testuser`
-- Password: `password123`
+- **Admin**: `admin@systeminstaller.com` / `admin123`
+- **Customer**: `customer@systeminstaller.com` / `customer123`
 
 ## Entwicklung
 
@@ -76,9 +52,6 @@ docker-compose restart web
 ```bash
 # Nur Datenbank und Keycloak starten
 docker-compose up -d db keycloak
-
-# Keycloak konfigurieren
-./setup-keycloak.sh
 
 # Anwendung lokal starten
 dotnet run
@@ -95,7 +68,6 @@ dotnet ef migrations add YourMigrationName
 ```bash
 docker-compose down -v
 docker-compose up -d
-./setup-keycloak.sh
 ```
 
 ## Projektstruktur
@@ -122,7 +94,7 @@ SystemInstaller/
 | `ConnectionStrings__DefaultConnection` | SQL Server Verbindung | siehe appsettings.json |
 | `Authentication__Keycloak__Authority` | Keycloak Realm URL | http://keycloak:8080/realms/systeminstaller |
 | `Authentication__Keycloak__ClientId` | Keycloak Client ID | systeminstaller-web |
-| `Authentication__Keycloak__ClientSecret` | Keycloak Client Secret | ⚠️ Muss gesetzt werden |
+| `Authentication__Keycloak__ClientSecret` | Keycloak Client Secret | `your-client-secret` (in realm config) |
 
 ### Ports
 
@@ -149,8 +121,8 @@ docker-compose build --no-cache
 
 ### Authentifizierung funktioniert nicht
 
-1. Prüfe Client Secret in allen Konfigurationsdateien
-2. Stelle sicher, dass Keycloak vollständig gestartet ist
+1. Stelle sicher, dass Keycloak vollständig gestartet ist
+2. Prüfe dass die Realm-Konfiguration korrekt importiert wurde
 3. Prüfe Redirect URIs in Keycloak Admin Console
 
 ### Datenbank-Probleme

@@ -1,4 +1,4 @@
-using SystemInstaller.Components;
+using SystemInstaller.Components; // For App component
 using SystemInstaller.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SystemInstaller.Infrastructure.Data;

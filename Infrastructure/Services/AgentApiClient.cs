@@ -1,4 +1,5 @@
 using SystemInstaller.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace SystemInstaller.Infrastructure.Services;
 

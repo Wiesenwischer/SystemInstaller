@@ -1,4 +1,6 @@
 using SystemInstaller.Domain.Entities;
+using SystemInstaller.Domain.ValueObjects;
+using SystemInstaller.Domain.Enums;
 using SystemInstaller.Application.DTOs;
 
 namespace SystemInstaller.IntegrationTests.Utilities;
@@ -7,79 +9,58 @@ public static class TestDataFactory
 {
     public static Tenant CreateTenant(string name = "Test Tenant", string description = "Test Description")
     {
-        return new Tenant
-        {
-            Id = Guid.NewGuid(),
-            Name = name,
-            Description = description,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
+        var email = new Email("test@example.com");
+        return new Tenant(name, email, description);
     }
 
     public static InstallationEnvironment CreateEnvironment(Guid tenantId, string name = "Test Environment")
     {
-        return new InstallationEnvironment
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            Name = name,
-            Description = "Test Environment Description",
-            ServerUrl = "https://test.example.com",
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
+        return new InstallationEnvironment(tenantId, name, "Test Environment Description");
     }
 
     public static InstallationTask CreateInstallationTask(Guid environmentId, string name = "Test Task")
     {
-        return new InstallationTask
+        return new InstallationTask(environmentId, name, "Test Task Description");
+    }
+
+    public static Installation CreateInstallation(Guid environmentId, string version = "1.0.0")
+    {
+        return new Installation
         {
             Id = Guid.NewGuid(),
             EnvironmentId = environmentId,
-            Name = name,
-            Description = "Test Task Description",
-            Status = Domain.Enums.InstallationStatus.Pending,
+            Version = version,
+            Status = InstallationStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
     }
 
-    public static User CreateUser(string email = "test@example.com", string name = "Test User")
+    public static User CreateUser(string email = "test@example.com", string firstName = "Test", string lastName = "User")
     {
         return new User
         {
             Id = Guid.NewGuid(),
             Email = email,
-            Name = name,
+            Name = $"{firstName} {lastName}",
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
     }
 
-    public static UserInvitation CreateUserInvitation(Guid tenantId, string email = "invite@example.com")
+    public static UserInvitation CreateUserInvitation(Guid tenantId, string email = "invite@example.com", string firstName = "John", string lastName = "Doe")
     {
-        return new UserInvitation
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            Email = email,
-            Role = "Member",
-            Status = Domain.Enums.InvitationStatus.Pending,
-            InvitationToken = Guid.NewGuid().ToString(),
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow
-        };
+        var emailVO = new Email(email);
+        var name = new PersonName(firstName, lastName);
+        var role = UserRole.Member;
+        return new UserInvitation(tenantId, emailVO, name, role);
     }
 
-    public static TenantUser CreateTenantUser(Guid tenantId, Guid userId, string role = "Member")
+    public static TenantUser CreateTenantUser(Guid tenantId, string userId, string email = "user@example.com", string firstName = "Test", string lastName = "User", string role = "Member")
     {
-        return new TenantUser
-        {
-            TenantId = tenantId,
-            UserId = userId,
-            Role = role,
-            JoinedAt = DateTime.UtcNow
-        };
+        var emailVO = new Email(email);
+        var name = new PersonName(firstName, lastName);
+        var userRole = new UserRole(role);
+        return new TenantUser(tenantId, userId, emailVO, name, userRole);
     }
 
     public static List<Tenant> CreateMultipleTenants(int count = 3)

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SystemInstaller.IntegrationTests.TestBase;
 using SystemInstaller.IntegrationTests.Utilities;
 using SystemInstaller.IntegrationTests.Mocks;
-using SystemInstaller.Web.Components.Pages;
+using SystemInstaller.Components.Pages;
 using Microsoft.AspNetCore.Components.Authorization;
 using AngleSharp.Dom;
 
@@ -90,10 +90,10 @@ public class TenantsComponentTests : BlazorComponentTestBase
     {
         // Arrange
         var activeTenant = TestDataFactory.CreateTenant("Active Tenant", "Active description");
-        activeTenant.IsActive = true;
+        activeTenant.Activate();
         
         var inactiveTenant = TestDataFactory.CreateTenant("Inactive Tenant", "Inactive description");
-        inactiveTenant.IsActive = false;
+        inactiveTenant.Deactivate();
 
         await DbContext.Tenants.AddRangeAsync(activeTenant, inactiveTenant);
         await DbContext.SaveChangesAsync();

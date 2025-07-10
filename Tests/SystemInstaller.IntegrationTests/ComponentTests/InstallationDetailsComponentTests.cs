@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SystemInstaller.IntegrationTests.TestBase;
 using SystemInstaller.IntegrationTests.Utilities;
 using SystemInstaller.IntegrationTests.Mocks;
-using SystemInstaller.Web.Components.Pages;
+using SystemInstaller.Components.Pages;
 using Microsoft.AspNetCore.Components.Authorization;
 using SystemInstaller.Domain.Enums;
 
@@ -29,13 +29,13 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         installation.Status = InstallationStatus.Running;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         Assert.Contains("3.1.0", component.Markup);
@@ -66,14 +66,14 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         installation.Tasks = new List<SystemInstaller.Domain.Entities.InstallationTask> { task1, task2, task3 };
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
-        await DbContext.InstallationTasks.AddRangeAsync(task1, task2, task3);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
+        await DbContext.Tasks.AddRangeAsync(task1, task2, task3);
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         Assert.Contains("Download Package", component.Markup);
@@ -103,14 +103,14 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         pendingTask.Status = InstallationStatus.Pending;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
-        await DbContext.InstallationTasks.AddRangeAsync(completedTask, runningTask, pendingTask);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
+        await DbContext.Tasks.AddRangeAsync(completedTask, runningTask, pendingTask);
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         var progressBar = component.Find(".progress");
@@ -118,11 +118,11 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
     }
 
     [Fact]
-    public async Task InstallationDetails_ShouldHandleInvalidInstallationId()
+    public async Task InstallationDetails_ShouldHandleInvalidTaskId()
     {
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, Guid.NewGuid().ToString()));
+            .Add(p => p.TaskId, Guid.NewGuid().ToString()));
 
         // Assert
         Assert.Contains("Installation not found", component.Markup);
@@ -138,13 +138,13 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         installation.Status = InstallationStatus.Pending;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         var startButton = component.Find("button:contains('Start Installation')");
@@ -161,13 +161,13 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         installation.Status = InstallationStatus.Running;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         var cancelButton = component.Find("button:contains('Cancel')");
@@ -184,13 +184,13 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         installation.Status = InstallationStatus.Failed;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         var retryButton = component.Find("button:contains('Retry')");
@@ -211,14 +211,14 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         task.Status = InstallationStatus.Completed;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
-        await DbContext.InstallationTasks.AddAsync(task);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
+        await DbContext.Tasks.AddAsync(task);
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         Assert.Contains("Timestamped Task", component.Markup);
@@ -233,17 +233,16 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         // Arrange
         var tenant = TestDataFactory.CreateTenant("Test Tenant");
         var environment = TestDataFactory.CreateEnvironment(tenant.Id, "Staging Environment");
-        environment.ServerUrl = "https://staging.example.com";
         var installation = TestDataFactory.CreateInstallation(environment.Id);
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         Assert.Contains("Staging Environment", component.Markup);
@@ -269,14 +268,14 @@ public class InstallationDetailsComponentTests : BlazorComponentTestBase
         task3.Order = 3;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
-        await DbContext.InstallationTasks.AddRangeAsync(task3, task1, task2); // Add in wrong order
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
+        await DbContext.Tasks.AddRangeAsync(task3, task1, task2); // Add in wrong order
         await DbContext.SaveChangesAsync();
 
         // Act
         var component = RenderComponent<InstallationDetails>(parameters => parameters
-            .Add(p => p.InstallationId, installation.Id.ToString()));
+            .Add(p => p.TaskId, installation.Id.ToString()));
 
         // Assert
         var markup = component.Markup;

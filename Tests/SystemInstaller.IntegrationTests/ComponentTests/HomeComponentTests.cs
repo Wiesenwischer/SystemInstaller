@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SystemInstaller.IntegrationTests.TestBase;
 using SystemInstaller.IntegrationTests.Utilities;
 using SystemInstaller.IntegrationTests.Mocks;
-using SystemInstaller.Web.Components.Pages;
+using SystemInstaller.Components.Pages;
 using Microsoft.AspNetCore.Components.Authorization;
 using SystemInstaller.Domain.Enums;
 
@@ -46,8 +46,8 @@ public class HomeComponentTests : BlazorComponentTestBase
         completedInstallation.Status = InstallationStatus.Completed;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddRangeAsync(pendingInstallation, runningInstallation, completedInstallation);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddRangeAsync(pendingInstallation, runningInstallation, completedInstallation);
         await DbContext.SaveChangesAsync();
 
         // Act
@@ -68,8 +68,8 @@ public class HomeComponentTests : BlazorComponentTestBase
         installation.CreatedAt = DateTime.UtcNow.AddHours(-1); // Recent
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddAsync(installation);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddAsync(installation);
         await DbContext.SaveChangesAsync();
 
         // Act
@@ -86,13 +86,11 @@ public class HomeComponentTests : BlazorComponentTestBase
         // Arrange
         var tenant = TestDataFactory.CreateTenant();
         var activeEnvironment = TestDataFactory.CreateEnvironment(tenant.Id, "Production");
-        activeEnvironment.IsActive = true;
         
         var inactiveEnvironment = TestDataFactory.CreateEnvironment(tenant.Id, "Staging");
-        inactiveEnvironment.IsActive = false;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddRangeAsync(activeEnvironment, inactiveEnvironment);
+        await DbContext.Environments.AddRangeAsync(activeEnvironment, inactiveEnvironment);
         await DbContext.SaveChangesAsync();
 
         // Act
@@ -148,8 +146,8 @@ public class HomeComponentTests : BlazorComponentTestBase
         installations[2].Status = InstallationStatus.Completed;
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddAsync(environment);
-        await DbContext.Installations.AddRangeAsync(installations);
+        await DbContext.Environments.AddAsync(environment);
+        await DbContext.Installation.AddRangeAsync(installations);
         await DbContext.SaveChangesAsync();
 
         // Act
@@ -169,7 +167,7 @@ public class HomeComponentTests : BlazorComponentTestBase
         var environments = TestDataFactory.CreateMultipleEnvironments(tenant.Id, 5);
 
         await DbContext.Tenants.AddAsync(tenant);
-        await DbContext.InstallationEnvironments.AddRangeAsync(environments);
+        await DbContext.Environments.AddRangeAsync(environments);
         await DbContext.SaveChangesAsync();
 
         // Act
