@@ -18,7 +18,8 @@ public static class DependencyInjection
     {
         // Database
         services.AddDbContext<SystemInstallerDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly("SystemInstaller.Web")));
 
         // Repositories
         services.AddScoped<ITenantRepository, TenantRepository>();

@@ -48,10 +48,49 @@ builder.Services.AddAuthentication(options =>
     
     // Map claims
     options.TokenValidationParameters.NameClaimType = "preferred_username";
-    options.TokenValidationParameters.RoleClaimType = "realm_access.roles";
+    options.TokenValidationParameters.RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+    
+    // Ensure roles are properly mapped from different claim sources
+    options.ClaimActions.Clear(); // Clear default claim actions
+    options.ClaimActions.MapJsonSubKey("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "realm_access", "roles");
+    options.ClaimActions.MapJsonKey("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "roles");
+    options.ClaimActions.MapJsonKey("preferred_username", "preferred_username");
+    options.ClaimActions.MapJsonKey("email", "email");
     
     options.Events = new OpenIdConnectEvents
     {
+        OnTokenValidated = context =>
+        {
+            // Debug: Log all claims
+            var claims = context.Principal?.Claims?.ToList();
+            if (claims != null)
+            {
+                Console.WriteLine("=== RECEIVED CLAIMS ===");
+                foreach (var claim in claims)
+                {
+                    Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+                }
+                Console.WriteLine("=== END CLAIMS ===");
+                
+                // Check if user has admin role - try different approaches
+                var hasAdminRole1 = context.Principal?.IsInRole("admin") ?? false;
+                var hasAdminRole2 = context.Principal?.FindAll(System.Security.Claims.ClaimTypes.Role)?.Any(c => c.Value == "admin") ?? false;
+                var hasAdminRole3 = context.Principal?.FindAll("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Any(c => c.Value == "admin") ?? false;
+                
+                Console.WriteLine($"User has admin role (IsInRole): {hasAdminRole1}");
+                Console.WriteLine($"User has admin role (ClaimTypes.Role): {hasAdminRole2}");
+                Console.WriteLine($"User has admin role (explicit claim type): {hasAdminRole3}");
+                
+                // Also check for roles in different claim types
+                var roleClaims = claims.Where(c => c.Type.Contains("role", StringComparison.OrdinalIgnoreCase)).ToList();
+                Console.WriteLine($"Role claims found: {roleClaims.Count}");
+                foreach (var roleClaim in roleClaims)
+                {
+                    Console.WriteLine($"Role claim - Type: {roleClaim.Type}, Value: {roleClaim.Value}");
+                }
+            }
+            return Task.CompletedTask;
+        },
         OnAccessDenied = context =>
         {
             context.HandleResponse();

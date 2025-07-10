@@ -43,7 +43,37 @@
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "publicClient": false,
-      "frontchannelLogout": false
+      "frontchannelLogout": false,
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
     }
   ],
   "users": [
@@ -53,7 +83,7 @@
       "emailVerified": true,
       "firstName": "System",
       "lastName": "Administrator",
-      "email": "admin@systeminstaller.local",
+      "email": "admin@example.com",
       "credentials": [
         {
           "type": "password",
@@ -69,7 +99,7 @@
       "emailVerified": true,
       "firstName": "Test",
       "lastName": "Customer",
-      "email": "customer@systeminstaller.local",
+      "email": "customer@example.com",
       "credentials": [
         {
           "type": "password",

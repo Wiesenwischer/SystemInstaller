@@ -8,26 +8,6 @@
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">System Installer</a>
-        <AuthorizeView>
-            <Authorized>
-                <div class="navbar-nav ms-auto">
-                    <span class="navbar-text me-3">
-                        Willkommen, @(context.User.Identity?.Name ?? "Benutzer")
-                        @{
-                            var userRole = "customer"; // Default role
-                            if (context.User.IsInRole("admin"))
-                            {
-                                userRole = "admin";
-                            }
-                        }
-                        <span class="badge bg-@(userRole == "admin" ? "danger" : "info") ms-2">@userRole</span>
-                    </span>
-                    <form method="post" action="/logout" class="d-inline">
-                        <button type="submit" class="btn btn-outline-light btn-sm">Abmelden</button>
-                    </form>
-                </div>
-            </Authorized>
-        </AuthorizeView>
     </div>
 </div>
 
