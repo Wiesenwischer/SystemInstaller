@@ -7,6 +7,7 @@
 @inject ITenantApplicationService TenantService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
 @attribute [Authorize(Roles = "admin")]
 
 <PageTitle>Tenant-Verwaltung</PageTitle>
@@ -161,16 +162,15 @@
         tenants = tenantEnumerable.ToList();
     }
     
-    private void ShowCreateModal()
+    private async Task ShowCreateModal()
     {
         currentTenant = new TenantFormModel();
         isEditing = false;
         editingId = null;
-        // Show modal using JavaScript
-        // In a real application, you would use JSInterop
+        await JSRuntime.InvokeVoidAsync("showModal", "tenantModal");
     }
     
-    private void EditTenant(TenantDto tenant)
+    private async Task EditTenant(TenantDto tenant)
     {
         currentTenant = new TenantFormModel
         {
@@ -180,7 +180,7 @@
         };
         isEditing = true;
         editingId = tenant.Id;
-        // Show modal using JavaScript
+        await JSRuntime.InvokeVoidAsync("showModal", "tenantModal");
     }
     
     private async Task SaveTenant()
@@ -206,6 +206,7 @@
             
             await LoadTenants();
             // Hide modal using JavaScript
+            await JSRuntime.InvokeVoidAsync("hideModal", "tenantModal");
             StateHasChanged();
         }
         catch (Exception ex)
