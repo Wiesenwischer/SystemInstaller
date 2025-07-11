@@ -1,0 +1,53 @@
+/* Basic Tailwind CSS generated file */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+.btn-primary {
+  @apply bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600;
+}
+
+.card {
+  @apply bg-white shadow-lg rounded-lg p-6;
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-4;
+}
+
+.sidebar {
+  @apply w-64 bg-gray-800 text-white p-4;
+}
+
+.main-content {
+  @apply flex-1 p-6;
+}
+
+.nav-link {
+  @apply block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded;
+}
+
+.nav-link.active {
+  @apply bg-gray-700 text-white;
+}
+
+.alert {
+  @apply p-4 rounded-md;
+}
+
+.alert-info {
+  @apply bg-blue-100 text-blue-700 border border-blue-300;
+}
+
+.alert-success {
+  @apply bg-green-100 text-green-700 border border-green-300;
+}
+
+.alert-warning {
+  @apply bg-yellow-100 text-yellow-700 border border-yellow-300;
+}
+
+.alert-primary {
+  @apply bg-blue-100 text-blue-700 border border-blue-300;
+}

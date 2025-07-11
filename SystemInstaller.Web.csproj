@@ -28,14 +28,10 @@
     <Content Remove="Tests/**" />
     <EmbeddedResource Remove="Tests/**" />
     <None Remove="Tests/**" />
-    <Compile Remove="Domain/**" />
-    <Compile Remove="Application/**" />
-    <Compile Remove="Infrastructure/**" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="Domain\SystemInstaller.Domain.csproj" />
-    <ProjectReference Include="Application\SystemInstaller.Application.csproj" />
+    <ProjectReference Include="Core\SystemInstaller.Core.csproj" />
     <ProjectReference Include="Infrastructure\SystemInstaller.Infrastructure.csproj" />
   </ItemGroup>
 

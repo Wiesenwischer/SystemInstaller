@@ -41,16 +41,31 @@ services:
       start_period: 60s
 
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     container_name: systeminstaller-web
+    ports:
+      - "3000:8080"
+    depends_on:
+      - api
+    networks:
+      - systeminstaller-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: systeminstaller-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=Server=db;Database=SystemInstallerDb;User=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;
-      - Authentication__Keycloak__Authority=http://host.docker.internal:8080/realms/systeminstaller
+      - Authentication__Keycloak__Authority=http://keycloak:8080/realms/systeminstaller
       - Authentication__Keycloak__ClientId=systeminstaller-web
       - Authentication__Keycloak__ClientSecret=your-client-secret
     ports:
-      - "8081:8080"
+      - "5000:5000"
     depends_on:
       db:
         condition: service_healthy

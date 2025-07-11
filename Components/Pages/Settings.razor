@@ -1,0 +1,107 @@
+@page "/settings"
+
+<PageTitle>Settings - System Installer</PageTitle>
+
+<div class="container">
+    <div class="card">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Settings</h2>
+        
+        <div class="alert alert-warning">
+            <h4 class="text-lg font-semibold mb-2">Application Settings</h4>
+            <p class="mb-2">This is a simple settings page to demonstrate the System Installer application.</p>
+            <p>Configuration options would go here, now styled with Tailwind CSS.</p>
+        </div>
+    </div>
+</div>
+
+<div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+    <!-- Breadcrumb -->
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-title-md2 font-semibold text-dark dark:text-white">
+            Settings
+        </h2>
+        <nav>
+            <ol class="flex items-center gap-2">
+                <li>
+                    <a class="font-medium" href="/">Dashboard /</a>
+                </li>
+                <li class="font-medium text-primary">Settings</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 gap-9 sm:grid-cols-2">
+        <!-- General Settings -->
+        <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+            <div class="border-b border-stroke px-7 py-4 dark:border-strokedark">
+                <h3 class="font-medium text-dark dark:text-white">
+                    General Settings
+                </h3>
+            </div>
+            <div class="p-7">
+                <div class="space-y-5">
+                    <div>
+                        <label class="mb-3 block text-sm font-medium text-dark dark:text-white">
+                            Application Name
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="System Installer"
+                            class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="mb-3 block text-sm font-medium text-dark dark:text-white">
+                            Theme
+                        </label>
+                        <select class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="auto">Auto</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Preferences -->
+        <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+            <div class="border-b border-stroke px-7 py-4 dark:border-strokedark">
+                <h3 class="font-medium text-dark dark:text-white">
+                    User Preferences
+                </h3>
+            </div>
+            <div class="p-7">
+                <div class="space-y-5">
+                    <div>
+                        <label class="mb-3 block text-sm font-medium text-dark dark:text-white">
+                            Language
+                        </label>
+                        <select class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">
+                            <option value="en">English</option>
+                            <option value="de">German</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="mb-3 block text-sm font-medium text-dark dark:text-white">
+                            Notifications
+                        </label>
+                        <div class="flex items-center">
+                            <input
+                                type="checkbox"
+                                class="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                checked
+                            />
+                            <label class="ml-3 text-sm text-dark dark:text-white">
+                                Enable email notifications
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

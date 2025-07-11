@@ -19,8 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\SystemInstaller.Domain.csproj" />
-    <ProjectReference Include="..\Application\SystemInstaller.Application.csproj" />
+    <ProjectReference Include="..\Core\SystemInstaller.Core.csproj" />
   </ItemGroup>
 
 </Project>

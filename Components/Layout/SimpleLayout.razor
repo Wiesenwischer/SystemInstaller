@@ -1,0 +1,16 @@
+@namespace SystemInstaller.Components.Layout
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@inherits LayoutComponentBase
+
+<div style="padding: 20px; background-color: lightgray;">
+    <h1 style="color: red;">SIMPLE LAYOUT TEST</h1>
+    <nav style="margin: 20px 0;">
+        <a href="/" style="margin-right: 20px;">Home</a>
+        <a href="/minimal" style="margin-right: 20px;">Minimal</a>
+        <a href="/test" style="margin-right: 20px;">Test</a>
+    </nav>
+    <div style="background-color: white; padding: 20px;">
+        @Body
+    </div>
+</div>

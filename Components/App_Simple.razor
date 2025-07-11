@@ -1,0 +1,34 @@
+@using Microsoft.AspNetCore.Components.Routing
+@using SystemInstaller.Components
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>System Installer Dashboard</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom CSS -->
+    <link href="app.css" rel="stylesheet" />
+    
+    <HeadOutlet />
+</head>
+
+<body class="bg-gray-50">
+    <component type="typeof(Routes)" render-mode="InteractiveServer" />
+    
+    <div id="blazor-error-ui">
+        <div class="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg">
+            An unhandled error has occurred.
+            <a href="" class="underline ml-2">Reload</a>
+        </div>
+    </div>
+    
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>
