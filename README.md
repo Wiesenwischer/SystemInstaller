@@ -1,30 +1,50 @@
 # SystemInstaller
 
-Ein Web-basiertes Dashboard zur Verwaltung von Docker-Environment-Installationen mit Keycloak-Authentifizierung.
+Ein modernes Web-basiertes Dashboard zur Verwaltung von Docker-Environment-Installationen mit Microservices-Architektur und Keycloak-Authentifizierung.
 
 ## Features
 
 - 🐳 **Docker Environment Management**: Verwalte und überwache Docker-basierte Installationen
-- 🔐 **Keycloak Authentifizierung**: Sichere Anmeldung mit OpenID Connect
-- 📊 **Dashboard**: Übersicht über alle laufenden und abgeschlossenen Installations-Tasks
+- 🔐 **Keycloak Authentifizierung**: Sichere Anmeldung mit OpenID Connect und JWT
+- � **API Gateway**: YARP-basiertes Gateway für Microservices-Routing
+- 📊 **Dashboard**: Modernes React-Dashboard mit TailAdmin-Template
 - 🏗️ **Environment Management**: Erstelle und verwalte verschiedene Umgebungen
 - 🔄 **Real-time Updates**: Live-Updates des Installationsstatus
 - 📱 **Responsive Design**: Optimiert für Desktop und Mobile
+- 🏛️ **Clean Architecture**: Domain-driven Design mit separaten Layern
+
+## Architektur
+
+```
+React Frontend (3000) → API Gateway (8090)
+                            ↓
+                      Keycloak (8082) [Optional]
+```
 
 ## Technologie-Stack
 
-- **Backend**: ASP.NET Core 8.0 mit Blazor Server
-- **Frontend**: Blazor Components mit Bootstrap
-- **Datenbank**: SQL Server mit Entity Framework Core
-- **Authentifizierung**: Keycloak mit OpenID Connect
-- **Containerisierung**: Docker & Docker Compose
+### Frontend
+- **React 18** mit TypeScript
+- **TailAdmin Template** - Moderne Admin-UI
+- **Tailwind CSS 4.0** - Utility-first CSS Framework
+- **Vite** - Build Tool und Dev Server
+
+### Gateway
+- **ASP.NET Core 9.0** - Reverse Proxy
+- **YARP** - Yet Another Reverse Proxy
+
+### Infrastructure
+- **Keycloak** - Identity & Access Management (Optional)
+- **Docker** - Containerisierung
+- **Nginx** - Frontend Web Server
 
 ## Quick Start
 
 ### 1. Voraussetzungen
 
 - Docker & Docker Compose
-- .NET 8.0 SDK (für lokale Entwicklung)
+- Node.js & npm (für Frontend-Entwicklung)
+- .NET 9.0 SDK (für Backend-Entwicklung)
 
 ### 2. Container starten
 
@@ -36,18 +56,27 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
-### 3. Anwendung verwenden
+### 3. Services
 
-- **SystemInstaller Dashboard**: http://localhost:8081
-- **Keycloak Admin Console**: http://localhost:8080
+- **React Frontend**: http://localhost:3000
+- **API Gateway**: http://localhost:8090  
+- **Keycloak Admin Console**: http://localhost:8082 (Optional)
 
-**Test-Login:**
-- **Admin**: `admin@systeminstaller.com` / `admin123`
-- **Customer**: `customer@systeminstaller.com` / `customer123`
+**Test-Login** (falls Keycloak aktiviert):
+- **Admin**: `admin` / `admin123`
+- **User**: `user` / `user123`
 
 ## Entwicklung
 
-### Lokale Entwicklung
+### Frontend-Entwicklung
+
+```bash
+cd Presentation/Web
+npm install
+npm run dev
+```
+
+### Backend-Entwicklung
 
 ```bash
 # Nur Datenbank und Keycloak starten

@@ -1,21 +1,5 @@
 version: '3.8'
 services:
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: systeminstaller-db
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong!Passw0rd
-    ports:
-      - "1433:1433"
-    networks:
-      - systeminstaller-net
-    healthcheck:
-      test: ["CMD-SHELL", "pidof sqlservr || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: systeminstaller-keycloak
@@ -27,7 +11,7 @@ services:
       - KC_HTTP_ENABLED=true
       - KC_HEALTH_ENABLED=true
     ports:
-      - "8080:8080"
+      - "8082:8080"
     networks:
       - systeminstaller-net
     volumes:
@@ -40,6 +24,26 @@ services:
       retries: 5
       start_period: 60s
 
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: systeminstaller-gateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8090
+      - Keycloak__Authority=http://keycloak:8082
+      - Keycloak__Realm=systeminstaller
+      - Keycloak__ClientId=systeminstaller-client
+      - Keycloak__ClientSecret=development-secret
+    ports:
+      - "8090:8090"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - systeminstaller-net
+
   web:
     build:
       context: .
@@ -48,29 +52,7 @@ services:
     ports:
       - "3000:8080"
     depends_on:
-      - api
-    networks:
-      - systeminstaller-net
-
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: systeminstaller-api
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5000
-      - ConnectionStrings__DefaultConnection=Server=db;Database=SystemInstallerDb;User=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;
-      - Authentication__Keycloak__Authority=http://keycloak:8080/realms/systeminstaller
-      - Authentication__Keycloak__ClientId=systeminstaller-web
-      - Authentication__Keycloak__ClientSecret=your-client-secret
-    ports:
-      - "5000:5000"
-    depends_on:
-      db:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
+      - gateway
     networks:
       - systeminstaller-net
 
