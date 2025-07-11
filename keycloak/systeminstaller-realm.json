@@ -8,6 +8,7 @@
   "duplicateEmailsAllowed": false,
   "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
+  "loginTheme": "tailadmin",
   "roles": {
     "realm": [
       {

@@ -1,0 +1,471 @@
+/* TailAdmin Keycloak Theme */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+:root {
+  --brand-50: #eff6ff;
+  --brand-100: #dbeafe;
+  --brand-200: #bfdbfe;
+  --brand-300: #93c5fd;
+  --brand-400: #60a5fa;
+  --brand-500: #3b82f6;
+  --brand-600: #2563eb;
+  --brand-700: #1d4ed8;
+  --brand-800: #1e40af;
+  --brand-900: #1e3a8a;
+  --brand-950: #172554;
+  
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  --success-500: #10b981;
+  --error-500: #ef4444;
+  --warning-500: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--gray-50);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Hide default Keycloak elements */
+#kc-header,
+#kc-header-wrapper {
+  display: none !important;
+}
+
+/* Main layout */
+#kc-page-title {
+  display: none;
+}
+
+.login-pf {
+  background: var(--gray-50);
+}
+
+.login-pf body {
+  background: var(--gray-50);
+}
+
+.card-pf {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+#kc-container {
+  display: flex;
+  min-height: 100vh;
+  padding: 0;
+}
+
+#kc-container-wrapper {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+/* Left side - Form (exactly 50% width) */
+.login-form-container {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--gray-50);
+}
+
+/* Form content wrapper for centering */
+.login-form-container > div {
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Right side - Branding (exactly 50% width) */
+.login-branding-container {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-950);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-branding-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+}
+
+.login-branding-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 24rem;
+  color: var(--gray-400);
+}
+
+.login-branding-content h2 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.login-branding-content p {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Form styling */
+#kc-form {
+  width: 100%;
+}
+
+#kc-form-wrapper {
+  width: 100%;
+}
+
+.login-header {
+  margin-bottom: 2rem;
+}
+
+.login-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin: 0 0 0.5rem 0;
+}
+
+.login-header p {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+/* Social buttons */
+.social-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--gray-700);
+  background-color: var(--gray-100);
+  border: none;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.social-button:hover {
+  background-color: var(--gray-200);
+  color: var(--gray-800);
+}
+
+.social-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Divider */
+.divider {
+  position: relative;
+  padding: 0.75rem 0 1.25rem 0;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--gray-200);
+}
+
+.divider span {
+  background: var(--gray-50);
+  color: var(--gray-400);
+  font-size: 0.875rem;
+  padding: 0.5rem 1.25rem;
+  position: relative;
+  z-index: 1;
+  display: block;
+  text-align: center;
+}
+
+/* Form fields */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+}
+
+.form-group label .required {
+  color: var(--error-500);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--gray-800);
+  background-color: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--brand-300);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group input::placeholder {
+  color: var(--gray-400);
+}
+
+/* Password field */
+.password-field {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-500);
+  z-index: 10;
+}
+
+.password-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Remember me and forgot password */
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+}
+
+.checkbox-group label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--gray-700);
+  margin: 0;
+}
+
+.forgot-password {
+  font-size: 0.875rem;
+  color: var(--brand-500);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.forgot-password:hover {
+  color: var(--brand-600);
+}
+
+/* Submit button */
+.btn-primary {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05);
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12), 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+}
+
+.btn-primary span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Sign up link */
+.signup-link {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+}
+
+.signup-link a {
+  color: var(--brand-500);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.signup-link a:hover {
+  color: var(--brand-600);
+}
+
+/* Alerts and messages */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.alert-error {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.alert-warning {
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fed7aa;
+}
+
+.alert-info {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+/* Loading state */
+.btn-primary:disabled {
+  background-color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .login-branding-container {
+    display: none;
+  }
+  
+  .login-form-container {
+    width: 100%;
+    padding: 2rem 1.5rem;
+  }
+  
+  #kc-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .social-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .login-form-container {
+    padding: 1rem;
+  }
+  
+  .login-form-container > div {
+    max-width: 100%;
+  }
+}

@@ -16,6 +16,7 @@ services:
       - systeminstaller-net
     volumes:
       - ./keycloak:/opt/keycloak/data/import
+      - ./keycloak/themes:/opt/keycloak/themes
     command: start-dev --import-realm
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
