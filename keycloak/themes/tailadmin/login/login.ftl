@@ -148,20 +148,10 @@
             <!-- Right side - Branding -->
             <div class="login-branding-container">
                 <div class="login-branding-content">
-                    <#if properties.kcLogoLink?has_content>
-                        <a href="${properties.kcLogoLink}">
-                            <#if realm.displayName?has_content>
-                                <h2>${realm.displayName}</h2>
-                            <#else>
-                                <h2>System Installer</h2>
-                            </#if>
-                        </a>
+                    <#if realm.displayName?has_content>
+                        <h2>${realm.displayName}</h2>
                     <#else>
-                        <#if realm.displayName?has_content>
-                            <h2>${realm.displayName}</h2>
-                        <#else>
-                            <h2>System Installer</h2>
-                        </#if>
+                        <h2>System Installer</h2>
                     </#if>
                     <p>Professional Deployment Management Platform with Modern Authentication</p>
                 </div>
