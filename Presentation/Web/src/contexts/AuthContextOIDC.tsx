@@ -1,14 +1,21 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { gatewayAuth, UserInfo } from '../services/gatewayAuth';
+
+interface UserInfo {
+  sub: string;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  roles: string[];
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: UserInfo | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: () => void;
   logout: () => Promise<void>;
   hasRole: (role: string) => boolean;
-  refreshToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,6 +23,56 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 interface AuthProviderProps {
   children: ReactNode;
 }
+
+// Gateway Authentication Service for OIDC flow
+class GatewayOIDCService {
+  private GATEWAY_BASE_URL = 'http://localhost:5000';
+
+  async getCurrentUser(): Promise<UserInfo | null> {
+    try {
+      const response = await fetch(`${this.GATEWAY_BASE_URL}/auth/user`, {
+        method: 'GET',
+        credentials: 'include', // Include cookies
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          return null; // Not authenticated
+        }
+        throw new Error(`Failed to get user info: ${response.status}`);
+      }
+
+      const userInfo: UserInfo = await response.json();
+      return userInfo;
+    } catch (error) {
+      console.error('Get user error:', error);
+      return null;
+    }
+  }
+
+  redirectToLogin(): void {
+    // Redirect to Gateway's OIDC login endpoint
+    window.location.href = `${this.GATEWAY_BASE_URL}/auth/login`;
+  }
+
+  async logout(): Promise<void> {
+    try {
+      await fetch(`${this.GATEWAY_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      // Redirect to home page after logout
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, redirect to home
+      window.location.href = '/';
+    }
+  }
+}
+
+const gatewayOIDC = new GatewayOIDCService();
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,7 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initAuth = async () => {
       try {
         // Check if user is already authenticated via existing cookies
-        const userInfo = await gatewayAuth.getCurrentUser();
+        const userInfo = await gatewayOIDC.getCurrentUser();
         
         if (userInfo) {
           setIsAuthenticated(true);
@@ -48,51 +105,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuth();
   }, []);
 
-  // Auto-refresh token every 5 minutes
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const refreshed = await gatewayAuth.refreshToken();
-        if (!refreshed) {
-          console.warn('Token refresh failed, user needs to login again');
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Token refresh failed:', error);
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    }, 5 * 60 * 1000); // 5 minutes
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated]);
-
-  const handleLogin = async (username: string, password: string) => {
-    try {
-      console.log('Starting login process...');
-      const result = await gatewayAuth.login(username, password);
-      
-      if (result.success && result.user) {
-        setIsAuthenticated(true);
-        setUser(result.user);
-        console.log('Login successful in AuthContext');
-      } else {
-        throw new Error(result.message || 'Login failed');
-      }
-    } catch (error) {
-      console.error('Login error in AuthContext:', error);
-      setIsAuthenticated(false);
-      setUser(null);
-      throw error; // Re-throw so UI can handle it
-    }
+  const handleLogin = () => {
+    // Redirect to Gateway's OIDC login (Keycloak)
+    gatewayOIDC.redirectToLogin();
   };
 
   const handleLogout = async () => {
     try {
-      await gatewayAuth.logout();
+      await gatewayOIDC.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -102,11 +122,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const checkRole = (role: string): boolean => {
-    return gatewayAuth.hasRole(role);
-  };
-
-  const refreshAuthToken = async (): Promise<boolean> => {
-    return await gatewayAuth.refreshToken();
+    return user?.roles?.includes(role) ?? false;
   };
 
   const contextValue: AuthContextType = {
@@ -116,7 +132,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login: handleLogin,
     logout: handleLogout,
     hasRole: checkRole,
-    refreshToken: refreshAuthToken,
   };
 
   return (

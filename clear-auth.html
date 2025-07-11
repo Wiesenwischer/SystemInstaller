@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Authentication Data</title>
+</head>
+<body>
+    <h1>Clear Authentication Data</h1>
+    <button onclick="clearAuth()">Clear All Auth Data</button>
+    <div id="result"></div>
+
+    <script>
+        function clearAuth() {
+            // Clear localStorage
+            localStorage.removeItem('mock-auth');
+            localStorage.removeItem('mock-user');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('id_token');
+            
+            // Clear sessionStorage
+            sessionStorage.removeItem('pkce_code_verifier');
+            
+            // Clear all localStorage and sessionStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            document.getElementById('result').innerHTML = '<p style="color: green;">All authentication data cleared!</p>';
+            
+            // Refresh after a short delay
+            setTimeout(() => {
+                window.location.href = 'http://localhost:3000';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

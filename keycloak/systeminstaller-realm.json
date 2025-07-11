@@ -30,19 +30,23 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "development-secret",
       "redirectUris": [
-        "http://localhost:3000/*",
-        "http://localhost:3000"
+        "http://localhost:5000/signin-oidc",
+        "http://localhost:5000/*"
       ],
       "webOrigins": [
+        "http://localhost:5000",
         "http://localhost:3000"
       ],
       "protocol": "openid-connect",
       "fullScopeAllowed": true,
       "standardFlowEnabled": true,
-      "directAccessGrantsEnabled": true,
+      "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
-      "publicClient": true,
-      "frontchannelLogout": false,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "attributes": {
+        "access.token.lifespan": "300"
+      },
       "protocolMappers": [
         {
           "name": "realm roles",

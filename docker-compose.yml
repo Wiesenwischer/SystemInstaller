@@ -29,20 +29,24 @@ services:
       context: .
       dockerfile: Dockerfile.gateway
     container_name: systeminstaller-gateway
+    ports:
+      - "5000:5000"
+    networks:
+      - systeminstaller-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8090
-      - Keycloak__Authority=http://keycloak:8082
+      - ASPNETCORE_URLS=http://+:5000
+      - Keycloak__Url=http://keycloak:8080
+      - Keycloak__ExternalUrl=http://localhost:8082
+      - Keycloak__HostUrl=http://host.docker.internal:8082
       - Keycloak__Realm=systeminstaller
       - Keycloak__ClientId=systeminstaller-client
       - Keycloak__ClientSecret=development-secret
-    ports:
-      - "8090:8090"
     depends_on:
       keycloak:
         condition: service_healthy
-    networks:
-      - systeminstaller-net
 
   web:
     build:
