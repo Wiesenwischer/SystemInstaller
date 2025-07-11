@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContextOIDC';
 
 const UserProfile: React.FC = () => {
   const { user, logout, hasRole } = useAuth();
