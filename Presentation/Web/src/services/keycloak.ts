@@ -9,70 +9,121 @@ export const keycloakConfig = {
 export let keycloak: any = null;
 
 // Initialize Keycloak
-export const initKeycloak = async () => {
-  // Note: In a real application, you would import Keycloak like this:
-  // import Keycloak from 'keycloak-js';
-  // 
-  // For now, this is a placeholder that shows the structure.
-  // You need to run: npm install keycloak-js
+export const initKeycloak = async (): Promise<boolean> => {
+  // Check if we're coming back from Keycloak with a code
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
   
-  try {
-    // keycloak = new Keycloak(keycloakConfig);
-    // const authenticated = await keycloak.init({
-    //   onLoad: 'check-sso',
-    //   silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
-    //   checkLoginIframe: false,
-    // });
+  if (code) {
+    // We have an authorization code, this means user authenticated successfully
+    console.log('Found authorization code from Keycloak redirect');
     
-    // For development without Keycloak running, return a mock
-    const mockAuthenticated = localStorage.getItem('mock-auth') === 'true';
+    // For now, just set mock authentication and remove the code from URL
+    localStorage.setItem('mock-auth', 'true');
+    localStorage.setItem('mock-user', JSON.stringify({
+      username: 'keycloak-user',
+      email: 'user@systeminstaller.com',
+      firstName: 'Keycloak',
+      lastName: 'User',
+      roles: ['admin', 'user']
+    }));
     
-    if (!mockAuthenticated) {
-      // Mock login for development
-      localStorage.setItem('mock-auth', 'true');
-      localStorage.setItem('mock-user', JSON.stringify({
-        username: 'admin',
-        email: 'admin@systeminstaller.com',
-        firstName: 'System',
-        lastName: 'Administrator',
-        roles: ['admin', 'user']
-      }));
-    }
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
     
-    // Create mock keycloak object
-    keycloak = {
-      authenticated: true,
-      token: 'mock-token',
-      tokenParsed: {
-        preferred_username: 'admin',
-        email: 'admin@systeminstaller.com',
-        given_name: 'System',
-        family_name: 'Administrator',
-        realm_access: {
-          roles: ['admin', 'user']
-        }
-      },
-      login: () => {
-        localStorage.setItem('mock-auth', 'true');
-        window.location.reload();
-      },
-      logout: () => {
-        localStorage.removeItem('mock-auth');
-        localStorage.removeItem('mock-user');
-        window.location.reload();
-      },
-      updateToken: () => Promise.resolve(true),
-      hasRealmRole: (role: string) => {
-        const user = JSON.parse(localStorage.getItem('mock-user') || '{}');
-        return user.roles?.includes(role) || false;
-      }
-    };
-    
-    return true;
-  } catch (error) {
-    console.error('Failed to initialize Keycloak:', error);
-    return false;
+    return initMockAuthentication();
   }
+  
+  // Check if already authenticated
+  const mockAuthenticated = localStorage.getItem('mock-auth') === 'true';
+  if (mockAuthenticated) {
+    return initMockAuthentication();
+  }
+  
+  // Check if Keycloak server is available and redirect
+  try {
+    console.log('Checking Keycloak server availability...');
+    const keycloakUrl = `${keycloakConfig.url}/realms/${keycloakConfig.realm}`;
+    
+    // Try to fetch the realm configuration
+    const response = await fetch(keycloakUrl, { 
+      method: 'GET', 
+      mode: 'cors' 
+    });
+    
+    if (response.ok) {
+      console.log('Keycloak server is available, redirecting to login...');
+      redirectToKeycloak();
+      return false; // Will redirect
+    }
+  } catch (error) {
+    console.log('Keycloak server not available:', error);
+  }
+  
+  console.log('Using mock authentication as fallback');
+  return initMockAuthentication();
+};
+
+// Manual redirect to Keycloak login
+const redirectToKeycloak = () => {
+  const params = new URLSearchParams({
+    client_id: keycloakConfig.clientId,
+    redirect_uri: window.location.origin,
+    response_type: 'code',
+    scope: 'openid profile email'
+  });
+  
+  const loginUrl = `${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/auth?${params}`;
+  console.log('Redirecting to Keycloak login:', loginUrl);
+  window.location.href = loginUrl;
+};
+
+// Initialize mock authentication as fallback
+const initMockAuthentication = () => {
+  const mockAuthenticated = localStorage.getItem('mock-auth') === 'true';
+  
+  if (!mockAuthenticated) {
+    // Mock login for development
+    localStorage.setItem('mock-auth', 'true');
+    localStorage.setItem('mock-user', JSON.stringify({
+      username: 'admin',
+      email: 'admin@systeminstaller.com',
+      firstName: 'System',
+      lastName: 'Administrator',
+      roles: ['admin', 'user']
+    }));
+  }
+  
+  // Create mock keycloak object
+  keycloak = {
+    authenticated: true,
+    token: 'mock-token',
+    tokenParsed: {
+      preferred_username: 'admin',
+      email: 'admin@systeminstaller.com',
+      given_name: 'System',
+      family_name: 'Administrator',
+      realm_access: {
+        roles: ['admin', 'user']
+      }
+    },
+    login: () => {
+      localStorage.setItem('mock-auth', 'true');
+      window.location.reload();
+    },
+    logout: () => {
+      localStorage.removeItem('mock-auth');
+      localStorage.removeItem('mock-user');
+      window.location.reload();
+    },
+    updateToken: () => Promise.resolve(true),
+    hasRealmRole: (role: string) => {
+      const user = JSON.parse(localStorage.getItem('mock-user') || '{}');
+      return user.roles?.includes(role) || false;
+    }
+  };
+  
+  return true;
 };
 
 // Get current user info

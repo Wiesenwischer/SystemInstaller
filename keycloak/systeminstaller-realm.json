@@ -24,25 +24,24 @@
   "requiredCredentials": ["password"],
   "clients": [
     {
-      "clientId": "systeminstaller-web",
+      "clientId": "systeminstaller-client",
       "name": "System Installer Web Application",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
-      "secret": "your-client-secret",
+      "secret": "development-secret",
       "redirectUris": [
-        "http://localhost:8081/signin-oidc",
-        "https://localhost:8081/signin-oidc"
+        "http://localhost:3000/*",
+        "http://localhost:3000"
       ],
       "webOrigins": [
-        "http://localhost:8081",
-        "https://localhost:8081"
+        "http://localhost:3000"
       ],
       "protocol": "openid-connect",
       "fullScopeAllowed": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
-      "publicClient": false,
+      "publicClient": true,
       "frontchannelLogout": false,
       "protocolMappers": [
         {

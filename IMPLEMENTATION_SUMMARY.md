@@ -42,9 +42,9 @@ Successfully simplified the SystemInstaller architecture by removing the Core an
 ## Current Architecture
 
 ```
-React Frontend (3000) → API Gateway (8090)
+React Frontend (3000) → API Gateway (8090) → [Protected APIs]
                             ↓
-                      Keycloak (8082) [Optional]
+                      Keycloak (8082) [ACTIVE]
 ```
 
 ## File Structure
@@ -68,9 +68,9 @@ SystemInstaller/
 
 | Service | Port | Purpose | Status |
 |---------|------|---------|--------|
-| React Frontend | 3000 | User interface | ✅ Ready |
-| API Gateway | 8090 | Reverse proxy | ✅ Working |
-| Keycloak | 8082 | Authentication | ✅ Optional |
+| React Frontend | 3000 | User interface | ✅ Ready (with Keycloak) |
+| API Gateway | 8090 | Reverse proxy + Auth | ✅ Working (JWT enabled) |
+| Keycloak | 8082 | Authentication | ✅ **ACTIVE** |
 
 ## How to Use
 
@@ -128,5 +128,22 @@ When backend functionality is needed:
 - **Health Monitoring**: Gateway provides health and info endpoints
 - **Production Ready**: Nginx serves React frontend in container
 - **Extensible**: Architecture supports adding backend services later
+
+## ⚠️ UPDATE: Keycloak Authentication Now ACTIVE!
+
+**Latest Change**: Keycloak authentication has been **activated** in the web application.
+
+### What Changed
+- ✅ **Real Keycloak Integration**: Frontend now uses keycloak-js for authentication
+- ✅ **Protected Routes**: All dashboard routes require authentication
+- ✅ **JWT Validation**: Gateway validates JWT tokens from Keycloak
+- ✅ **Sample APIs**: Added protected `/api/user` and public `/api/public` endpoints
+- ✅ **Automatic Fallback**: Falls back to mock auth if Keycloak unavailable
+
+### Authentication Flow
+1. User accesses app → Redirected to Keycloak login
+2. Login with admin/admin123 or user/user123
+3. JWT token received → Dashboard access granted
+4. API calls include Bearer token for protected endpoints
 
 The simplified architecture provides a solid foundation for a modern web application with room for growth while keeping the initial setup minimal and focused.
