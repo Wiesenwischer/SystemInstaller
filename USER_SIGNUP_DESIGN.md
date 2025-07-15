@@ -1,8 +1,14 @@
-# User Sign-Up Feature Design
+# ReadyStackGo (RSGO) User Sign-Up Design
+
+<div align="center">
+  <img src="assets/logo.png" alt="ReadyStackGo Logo" width="300">
+</div>
+
+> **Turn your specs into stacks**
 
 ## Overview
 
-This document describes the domain-driven design for user sign-up functionality in the SystemInstaller application. The process involves a multi-step workflow with email verification and external identity provider integration.
+This document describes the domain-driven design for user sign-up functionality in the ReadyStackGo (RSGO) application. The process involves a multi-step workflow with email verification and external identity provider integration.
 
 ## Business Process
 

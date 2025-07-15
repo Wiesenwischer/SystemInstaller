@@ -1,8 +1,14 @@
-# SystemInstaller Domain Design
+# ReadyStackGo (RSGO) Domain Design
+
+<div align="center">
+  <img src="assets/logo.png" alt="ReadyStackGo Logo" width="300">
+</div>
+
+> **Turn your specs into stacks**
 
 ## Overview
 
-This document outlines the domain design principles and patterns used in the SystemInstaller system. We follow Domain-Driven Design (DDD) principles with Clean Architecture patterns.
+This document outlines the domain design principles and patterns used in the ReadyStackGo (RSGO) system. We follow Domain-Driven Design (DDD) principles with Clean Architecture patterns.
 
 ## Domain Structure
 

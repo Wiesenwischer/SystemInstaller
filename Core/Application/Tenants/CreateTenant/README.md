@@ -1,12 +1,18 @@
 # Create Tenant Use Case
 
+<div align="center">
+  <img src="../../../../assets/logo.png" alt="ReadyStackGo Logo" width="200">
+</div>
+
+> **Turn your specs into stacks**
+
 ## Overview
 
-The **Create Tenant** use case handles the creation of new tenant organizations within the SystemInstaller platform. This is a foundational operation that establishes the organizational boundaries for user management and system installations.
+The **Create Tenant** use case handles the creation of new tenant organizations within the ReadyStackGo (RSGO) platform. This is a foundational operation that establishes the organizational boundaries for user management and system installations.
 
 ## Business Context
 
-A **Tenant** represents an organizational unit (company, department, or team) that will manage their own installations and users within the SystemInstaller platform. Each tenant operates in isolation from other tenants, providing multi-tenancy capabilities.
+A **Tenant** represents an organizational unit (company, department, or team) that will manage their own installations and users within the ReadyStackGo platform. Each tenant operates in isolation from other tenants, providing multi-tenancy capabilities.
 
 ## Use Case Flow
 

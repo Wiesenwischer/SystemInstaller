@@ -1,6 +1,12 @@
-# TailAdmin Keycloak Theme
+# TailAdmin Keycloak Theme for ReadyStackGo
 
-Dieses Custom Theme für Keycloak wurde entwickelt, um das Design der TailAdmin Sign-In Seite zu replizieren und eine konsistente Benutzererfahrung zwischen dem Frontend und der Authentifizierung zu gewährleisten.
+<div align="center">
+  <img src="../../assets/logo.png" alt="ReadyStackGo Logo" width="200">
+</div>
+
+> **Turn your specs into stacks**
+
+Dieses Custom Theme für Keycloak wurde entwickelt, um das Design der TailAdmin Sign-In Seite zu replizieren und eine konsistente Benutzererfahrung zwischen dem ReadyStackGo (RSGO) Frontend und der Authentifizierung zu gewährleisten.
 
 ## Features
 

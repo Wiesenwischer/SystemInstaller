@@ -1,8 +1,14 @@
-# Enhanced Authentication Features
+# Enhanced Authentication Features - ReadyStackGo (RSGO)
+
+<div align="center">
+  <img src="assets/logo.png" alt="ReadyStackGo Logo" width="200">
+</div>
+
+> **Turn your specs into stacks**
 
 ## Overview
 
-The SystemInstaller application now features a comprehensive authentication system that integrates the existing beautiful TailAdmin sign-in page with Keycloak authentication, providing multiple authentication methods and fallback options.
+The ReadyStackGo application now features a comprehensive authentication system that integrates the existing beautiful TailAdmin sign-in page with Keycloak authentication, providing multiple authentication methods and fallback options.
 
 ## Features
 

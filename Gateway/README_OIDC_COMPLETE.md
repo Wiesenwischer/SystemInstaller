@@ -1,8 +1,14 @@
-# ✅ OIDC Authentication Implementation Complete
+# ✅ OIDC Authentication Implementation Complete - ReadyStackGo (RSGO)
+
+<div align="center">
+  <img src="../assets/logo.png" alt="ReadyStackGo Logo" width="200">
+</div>
+
+> **Turn your specs into stacks**
 
 ## What We Accomplished
 
-You were absolutely right! Instead of creating custom login forms, we've implemented proper **OpenID Connect (OIDC) authentication** with Keycloak through the Gateway. This is the industry-standard approach that leverages Keycloak's built-in authentication UI and security features.
+You were absolutely right! Instead of creating custom login forms, we've implemented proper **OpenID Connect (OIDC) authentication** with Keycloak through the Gateway. This is the industry-standard approach that leverages Keycloak's built-in authentication UI and security features for the ReadyStackGo platform.
 
 ## 🏗️ Architecture Changes
 

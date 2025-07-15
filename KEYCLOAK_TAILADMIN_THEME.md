@@ -1,9 +1,15 @@
-# Keycloak TailAdmin Theme Implementation Summary
+# Keycloak TailAdmin Theme Implementation Summary - ReadyStackGo (RSGO)
+
+<div align="center">
+  <img src="assets/logo.png" alt="ReadyStackGo Logo" width="200">
+</div>
+
+> **Turn your specs into stacks**
 
 ## Was wurde implementiert?
 
 ### 🎨 Vollständige UI Transformation
-Das Keycloak Login-Design wurde komplett an das TailAdmin Sign-In Design angepasst:
+Das Keycloak Login-Design wurde komplett an das TailAdmin Sign-In Design für ReadyStackGo angepasst:
 
 - **Split-Screen Layout**: Links Formular, rechts Branding-Bereich
 - **Moderne Formulargestaltung**: Input-Felder im TailAdmin-Stil

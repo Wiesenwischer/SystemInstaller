@@ -1,4 +1,10 @@
-# SystemInstaller
+# ReadyStackGo (RSGO)
+
+<div align="center">
+  <img src="assets/logo.png" alt="ReadyStackGo Logo" width="400">
+</div>
+
+> **Turn your specs into stacks**
 
 Ein modernes Web-basiertes Dashboard zur Verwaltung von Docker-Environment-Installationen mit Microservices-Architektur und Keycloak-Authentifizierung.
 

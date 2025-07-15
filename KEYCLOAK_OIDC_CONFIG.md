@@ -1,8 +1,14 @@
-# Keycloak OIDC Configuration Summary
+# ReadyStackGo (RSGO) Keycloak OIDC Configuration
+
+<div align="center">
+  <img src="assets/logo.png" alt="ReadyStackGo Logo" width="300">
+</div>
+
+> **Turn your specs into stacks**
 
 ## ✅ What We've Updated
 
-### 1. **Keycloak Realm Configuration** (`keycloak/systeminstaller-realm.json`)
+### 1. **Keycloak Realm Configuration** (`keycloak/readystackgo-realm.json`)
 - **Redirect URIs**: Updated to `http://localhost:5000/signin-oidc` (Gateway OIDC callback)
 - **Web Origins**: Added `http://localhost:5000` (Gateway) and kept `http://localhost:3000` (React)
 - **Post Logout Redirect URIs**: Added both Gateway and React URLs
@@ -14,8 +20,8 @@
 ### 2. **Gateway Configuration** (`Gateway/appsettings.json`)
 - **ClientSecret**: Updated to match realm configuration (`development-secret`)
 - **Keycloak URL**: Configured for `http://localhost:8082`
-- **Realm**: `systeminstaller`
-- **ClientId**: `systeminstaller-client`
+- **Realm**: `readystackgo`
+- **ClientId**: `readystackgo-client`
 
 ### 3. **Setup Scripts**
 - **`setup-keycloak-oidc.ps1`**: Windows PowerShell script to import realm

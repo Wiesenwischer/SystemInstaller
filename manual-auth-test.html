@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manual Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .step { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 10px 0; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #0056b3; }
+        .url-display { font-family: monospace; background: #f8f9fa; padding: 5px; border-radius: 3px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Manual Authentication Test</h1>
+    <p>This page will help you test the authentication flow step by step.</p>
+    
+    <div class="step info">
+        <strong>Step 1:</strong> Click the button below to start the authentication flow
+    </div>
+    
+    <button onclick="startAuthFlow()">🚀 Start Authentication Flow</button>
+    
+    <div class="step info">
+        <strong>Step 2:</strong> After clicking, you should be redirected to Keycloak
+    </div>
+    
+    <div class="step info">
+        <strong>Step 3:</strong> Login with: <br>
+        Username: <code>admin</code><br>
+        Password: <code>admin123</code>
+    </div>
+    
+    <div class="step info">
+        <strong>Step 4:</strong> Check if you're redirected back here without loops
+    </div>
+    
+    <div id="results"></div>
+    
+    <h2>🔍 Debug Information</h2>
+    <div class="url-display">
+        Current URL: <span id="current-url"></span>
+    </div>
+    
+    <button onclick="checkAuthStatus()">🔍 Check Authentication Status</button>
+    <button onclick="clearAuthData()">🧹 Clear Auth Data</button>
+    <button onclick="logout()">🚪 Logout</button>
+    
+    <div id="debug-info"></div>
+    
+    <script>
+        function updateCurrentUrl() {
+            document.getElementById('current-url').textContent = window.location.href;
+        }
+        
+        function startAuthFlow() {
+            addResult('🚀 Starting authentication flow...', 'info');
+            window.location.href = 'http://localhost:5000/auth/login';
+        }
+        
+        function checkAuthStatus() {
+            addResult('🔍 Checking authentication status...', 'info');
+            
+            fetch('/auth/user')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Not authenticated');
+                    }
+                })
+                .then(user => {
+                    addResult('✅ User is authenticated: ' + JSON.stringify(user), 'success');
+                })
+                .catch(error => {
+                    addResult('❌ User is not authenticated: ' + error.message, 'error');
+                });
+        }
+        
+        function clearAuthData() {
+            localStorage.clear();
+            sessionStorage.clear();
+            addResult('🧹 Cleared all local storage and session storage', 'info');
+        }
+        
+        function logout() {
+            addResult('🚪 Logging out...', 'info');
+            window.location.href = 'http://localhost:5000/auth/logout';
+        }
+        
+        function addResult(message, type) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'step ' + type;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        // Update URL on page load
+        updateCurrentUrl();
+        
+        // Check if we just came back from authentication
+        const urlParams = new URLSearchParams(window.location.search);
+        if (window.location.pathname === '/auth/callback' || urlParams.get('code')) {
+            addResult('🔄 Detected authentication callback - you were redirected back!', 'success');
+        }
+        
+        // Display current authentication state
+        if (window.location.href.includes('localhost:5000') && !window.location.href.includes('auth/login')) {
+            addResult('ℹ️ You are currently on the application. Testing authentication status...', 'info');
+            checkAuthStatus();
+        }
+    </script>
+</body>
+</html>

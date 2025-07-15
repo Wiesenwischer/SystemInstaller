@@ -1,10 +1,16 @@
-# Keycloak Authentication - Now Active!
+# Keycloak Authentication - Now Active! - ReadyStackGo (RSGO)
 
-This guide explains the activated Keycloak authentication integration for the SystemInstaller application.
+<div align="center">
+  <img src="assets/logo.png" alt="ReadyStackGo Logo" width="200">
+</div>
+
+> **Turn your specs into stacks**
+
+This guide explains the activated Keycloak authentication integration for the ReadyStackGo application.
 
 ## Overview
 
-The SystemInstaller now includes **ACTIVE Keycloak authentication**:
+ReadyStackGo now includes **ACTIVE Keycloak authentication**:
 - **API Gateway** (YARP-based) with JWT authentication on port 8090
 - **React Frontend** with Keycloak integration on port 3000
 - **Keycloak Server** for authentication on port 8082

@@ -1,12 +1,14 @@
-# TailAdmin React - Free React Tailwind Admin Dashboard Template
+# ReadyStackGo (RSGO) - React Admin Dashboard
 
-TailAdmin is a free and open-source admin dashboard template built on **React and Tailwind CSS**, providing developers
-with everything they need to create a comprehensive, data-driven back-end,
-dashboard, or admin panel solution for upcoming web projects.
+<div align="center">
+  <img src="../../assets/logo.png" alt="ReadyStackGo Logo" width="200">
+</div>
 
-With TailAdmin, you get access to all the necessary dashboard UI components, elements, and pages required to build a
-feature-rich and complete dashboard or admin panel. Whether you're building dashboard or admin panel for a complex web
-application or a simple website, TailAdmin is the perfect solution to help you get up and running quickly.
+> **Turn your specs into stacks**
+
+ReadyStackGo is a modern admin dashboard built on **React and Tailwind CSS**, providing developers with everything they need to create comprehensive, data-driven administration panels for system installations and environment management.
+
+With ReadyStackGo, you get access to all the necessary dashboard UI components, elements, and pages required to build a feature-rich and complete admin panel for managing system installations across different environments. Whether you're deploying complex distributed systems or simple applications, ReadyStackGo is the perfect solution to help you get up and running quickly.
 
 ![TailAdmin React.js Dashboard Preview](./banner.png)
 

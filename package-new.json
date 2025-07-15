@@ -1,0 +1,15 @@
+{
+  "name": "systeminstaller",
+  "version": "1.0.0",
+  "description": "System Installer with Tailwind CSS",
+  "scripts": {
+    "build-css": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/tailwind.css",
+    "watch-css": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/tailwind.css --watch",
+    "test": "node complete-logout-test.js",
+    "test-playwright": "npx playwright test"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.0.0",
+    "playwright": "^1.40.0"
+  }
+}

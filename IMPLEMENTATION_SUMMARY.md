@@ -1,8 +1,14 @@
-# SystemInstaller - Simplified Architecture Implementation
+# ReadyStackGo (RSGO) - Simplified Architecture Implementation
+
+<div align="center">
+  <img src="assets/logo.png" alt="ReadyStackGo Logo" width="200">
+</div>
+
+> **Turn your specs into stacks**
 
 ## Summary
 
-Successfully simplified the SystemInstaller architecture by removing the Core and API projects and creating a streamlined Gateway + Frontend setup.
+Successfully simplified the ReadyStackGo architecture by removing the Core and API projects and creating a streamlined Gateway + Frontend setup.
 
 ## What Was Completed
 
