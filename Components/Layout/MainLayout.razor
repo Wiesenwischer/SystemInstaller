@@ -28,7 +28,7 @@
                             }
                             <span class="badge bg-@(userRole == "admin" ? "danger" : "info") ms-2">@userRole</span>
                         </span>
-                        <form method="post" action="/logout" class="d-inline">
+                        <form method="post" action="/auth/logout" class="d-inline">
                             <button type="submit" class="btn btn-outline-dark btn-sm">Abmelden</button>
                         </form>
                     </div>

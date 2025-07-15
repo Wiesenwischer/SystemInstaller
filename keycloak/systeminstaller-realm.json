@@ -44,8 +44,9 @@
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "publicClient": false,
-      "frontchannelLogout": true,
+      "frontchannelLogout": false,
       "attributes": {
+        "post.logout.redirect.uris": "+",
         "access.token.lifespan": "300"
       },
       "protocolMappers": [

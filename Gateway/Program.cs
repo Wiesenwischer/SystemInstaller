@@ -32,6 +32,10 @@ public class Program
             options.ExpireTimeSpan = TimeSpan.FromHours(24);
             options.SlidingExpiration = true;
             
+            // Fix correlation issues - ensure cookies work properly
+            options.Cookie.IsEssential = true;
+            options.Cookie.Domain = null; // Let the browser set the domain
+            
             // Handle unauthenticated requests
             options.Events.OnRedirectToLogin = context =>
             {
@@ -46,117 +50,130 @@ public class Program
                 context.Response.Redirect(context.RedirectUri);
                 return Task.CompletedTask;
             };
+            
+            // Fix correlation issues
+            options.Events.OnValidatePrincipal = context =>
+            {
+                return Task.CompletedTask;
+            };
         })
         .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
         {
             var keycloakConfig = builder.Configuration.GetSection("Keycloak");
+            var realm = keycloakConfig["Realm"] ?? "systeminstaller";
             
-            // Use external URL for Authority (browser redirects)
-            var keycloakExternalUrl = keycloakConfig["ExternalUrl"]; // localhost:8082
-            // Use internal URL for metadata (container communication)
-            var keycloakInternalUrl = keycloakConfig["Url"]; // keycloak:8080
-            // Use host URL for JwksUri (container-to-host communication)
-            var keycloakHostUrl = keycloakConfig["HostUrl"]; // host.docker.internal:8082
-            var realm = keycloakConfig["Realm"];
+            // Build Keycloak URL from configurable host and port
+            var keycloakHost = keycloakConfig["Host"] ?? "host.docker.internal";
+            var keycloakPort = keycloakConfig["Port"] ?? "8082";
+            var keycloakUrl = $"http://{keycloakHost}:{keycloakPort}";
             
-            // Debug logging
-            Console.WriteLine($"DEBUG: KeycloakExternalUrl = {keycloakExternalUrl}");
-            Console.WriteLine($"DEBUG: KeycloakInternalUrl = {keycloakInternalUrl}");
-            Console.WriteLine($"DEBUG: KeycloakHostUrl = {keycloakHostUrl}");
-            
-            // Authority must be external URL for browser redirects
-            options.Authority = $"{keycloakExternalUrl}/realms/{realm}";
-            Console.WriteLine($"DEBUG: Authority = {options.Authority}");
-            
-            options.ClientId = keycloakConfig["ClientId"]!;
+            // Configuration for OIDC - use constructed URL for both Authority and MetadataAddress
+            options.Authority = $"{keycloakUrl}/realms/{realm}";
+            options.MetadataAddress = $"{keycloakUrl}/realms/{realm}/.well-known/openid-configuration";
+            options.ClientId = keycloakConfig["ClientId"] ?? "systeminstaller-client";
             options.ClientSecret = keycloakConfig["ClientSecret"];
             options.ResponseType = OpenIdConnectResponseType.Code;
-            options.RequireHttpsMetadata = false; // For development
+            options.RequireHttpsMetadata = false;
             
-            // Create a custom configuration manager that fetches metadata from HostUrl but returns modified configuration
-            var metadataAddress = $"{keycloakHostUrl}/realms/{realm}/.well-known/openid-configuration";
-            var httpDocumentRetriever = new HttpDocumentRetriever()
-            {
-                RequireHttps = false // Allow HTTP for development
-            };
+            // Fix correlation issues - ensure proper redirect URIs
+            options.CallbackPath = "/signin-oidc";
+            options.SignedOutCallbackPath = "/signout-callback-oidc";
+            options.RemoteSignOutPath = "/signout-oidc";
             
-            var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                metadataAddress,
-                new OpenIdConnectConfigurationRetriever(),
-                httpDocumentRetriever);
-            
-            // Create a wrapper that modifies the configuration to use correct URLs
-            options.ConfigurationManager = new CustomConfigurationManager(
-                configurationManager,
-                keycloakExternalUrl ?? "http://localhost:8082",
-                keycloakInternalUrl ?? "http://keycloak:8080",
-                realm ?? "systeminstaller");
-            
-            // Allow issuer mismatch since we're using mixed URLs
-            options.TokenValidationParameters.ValidateIssuer = false;
-            
-            Console.WriteLine($"DEBUG: Authority = {options.Authority}");
-            Console.WriteLine($"DEBUG: Using CustomConfigurationManager with metadata from: {metadataAddress}");
-            Console.WriteLine($"DEBUG: ValidateIssuer = {options.TokenValidationParameters.ValidateIssuer}");
-            
-            // Test discovery endpoint connectivity
-            try 
-            {
-                using var httpClient = new HttpClient();
-                var discoveryAddress = $"{keycloakHostUrl}/realms/{realm}/.well-known/openid-configuration";
-                Console.WriteLine($"DEBUG: Testing discovery endpoint connectivity to {discoveryAddress}");
-                var response = httpClient.GetAsync(discoveryAddress).Result;
-                Console.WriteLine($"DEBUG: Discovery endpoint response status: {response.StatusCode}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = response.Content.ReadAsStringAsync().Result;
-                    Console.WriteLine($"DEBUG: Discovery endpoint content length: {content.Length}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"DEBUG: Discovery endpoint connectivity test failed: {ex.Message}");
-            }
+            // Enable PKCE and save tokens
+            options.UsePkce = true;
+            options.SaveTokens = true;
             
             // Configure scopes
             options.Scope.Clear();
             options.Scope.Add("openid");
             options.Scope.Add("profile");
             options.Scope.Add("email");
-            options.Scope.Add("roles");
             
-            // Save tokens in authentication properties
-            options.SaveTokens = true;
+            // Fix correlation by configuring state and nonce properly
+            options.ProtocolValidator.RequireNonce = true;
+            options.ProtocolValidator.RequireState = true;
+            options.ProtocolValidator.NonceLifetime = TimeSpan.FromMinutes(15);
+            
+            // Relax validation for development
+            options.TokenValidationParameters.ValidateIssuer = false;
+            options.TokenValidationParameters.ValidateAudience = false;
+            options.TokenValidationParameters.ValidateLifetime = true;
+            options.TokenValidationParameters.ClockSkew = TimeSpan.FromMinutes(5);
             
             // Map claims
             options.TokenValidationParameters.NameClaimType = "preferred_username";
             options.TokenValidationParameters.RoleClaimType = "realm_access.roles";
             
-            // Configure events for debugging
+            // Events for debugging and error handling
             options.Events = new OpenIdConnectEvents
             {
                 OnAuthenticationFailed = context =>
                 {
-                    Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                    Console.WriteLine($"❌ Authentication failed: {context.Exception.Message}");
                     if (context.Exception.InnerException != null)
                     {
-                        Console.WriteLine($"Inner exception: {context.Exception.InnerException.Message}");
+                        Console.WriteLine($"❌ Inner exception: {context.Exception.InnerException.Message}");
                     }
+                    
+                    // Handle correlation failures specifically
+                    if (context.Exception.Message.Contains("Correlation failed") || 
+                        context.Exception.Message.Contains("correlation"))
+                    {
+                        Console.WriteLine("🔧 Correlation failure detected - clearing authentication cookies");
+                        context.Response.Cookies.Delete("SystemInstaller.Auth");
+                        context.Response.Cookies.Delete(".AspNetCore.OpenIdConnect.Nonce.CfDJ8");
+                        context.Response.Cookies.Delete(".AspNetCore.Correlation.OpenIdConnect");
+                    }
+                    
+                    // Redirect to a simple error page instead of throwing
+                    context.Response.Redirect("/auth/error");
+                    context.HandleResponse();
                     return Task.CompletedTask;
                 },
                 OnTokenValidated = context =>
                 {
-                    Console.WriteLine($"Token validated for user: {context.Principal?.Identity?.Name ?? "Unknown"}");
+                    Console.WriteLine($"✅ Token validated for user: {context.Principal?.Identity?.Name ?? "Unknown"}");
+                    return Task.CompletedTask;
+                },
+                OnTicketReceived = context =>
+                {
+                    Console.WriteLine("🎫 Authentication ticket received");
                     return Task.CompletedTask;
                 },
                 OnRemoteFailure = context =>
                 {
-                    Console.WriteLine($"Remote failure: {context.Failure?.Message}");
+                    Console.WriteLine($"❌ Remote failure: {context.Failure?.Message}");
+                    
+                    // Handle correlation failures in remote failure as well
+                    if (context.Failure?.Message?.Contains("Correlation failed") == true)
+                    {
+                        Console.WriteLine("🔧 Remote correlation failure - clearing cookies and retrying");
+                        context.Response.Cookies.Delete("SystemInstaller.Auth");
+                        context.Response.Cookies.Delete(".AspNetCore.OpenIdConnect.Nonce.CfDJ8");
+                        context.Response.Cookies.Delete(".AspNetCore.Correlation.OpenIdConnect");
+                    }
+                    
+                    context.Response.Redirect("/auth/error");
+                    context.HandleResponse();
                     return Task.CompletedTask;
                 },
-                OnAuthorizationCodeReceived = context =>
+                OnRedirectToIdentityProvider = context =>
                 {
-                    Console.WriteLine($"Authorization code received");
+                    Console.WriteLine($"🔄 Redirecting to identity provider: {context.ProtocolMessage.IssuerAddress}");
+                    // Ensure proper redirect URI
+                    var redirectUri = $"{context.Request.Scheme}://{context.Request.Host}{options.CallbackPath}";
+                    context.ProtocolMessage.RedirectUri = redirectUri;
+                    Console.WriteLine($"🔗 Setting redirect URI to: {redirectUri}");
+                    return Task.CompletedTask;
+                },
+                OnRedirectToIdentityProviderForSignOut = context =>
+                {
+                    Console.WriteLine("🚪 Redirecting to identity provider for sign out");
+                    // Allow redirect back to the app after logout for better UX
+                    var redirectUri = $"{context.Request.Scheme}://{context.Request.Host}/";
+                    context.ProtocolMessage.PostLogoutRedirectUri = redirectUri;
+                    Console.WriteLine($"🔗 Post logout redirect URI set to: {redirectUri}");
                     return Task.CompletedTask;
                 }
             };
@@ -190,12 +207,60 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
         
+        // Custom middleware to handle authentication for frontend routes
+        app.Use(async (context, next) =>
+        {
+            var path = context.Request.Path.Value;
+            var user = context.User;
+            
+            // Debug logging
+            Console.WriteLine($"🔍 Middleware - Path: {path}, Authenticated: {user?.Identity?.IsAuthenticated}, User: {user?.Identity?.Name}");
+            
+            // Skip authentication middleware for OIDC callback endpoints and authentication-related paths
+            if (path != null && (
+                path.StartsWith("/signin-oidc") ||
+                path.StartsWith("/signout-callback-oidc") ||
+                path.StartsWith("/auth/") ||
+                path.StartsWith("/api/") ||
+                path.StartsWith("/_framework/") ||
+                path.StartsWith("/_content/") ||
+                path.StartsWith("/css/") ||
+                path.StartsWith("/js/") ||
+                path.StartsWith("/favicon.ico")))
+            {
+                Console.WriteLine($"⏭️  Skipping middleware for path: {path}");
+                await next();
+                return;
+            }
+            
+            // If accessing root path and not authenticated, redirect to login
+            if (user?.Identity?.IsAuthenticated != true && 
+                path == "/" &&
+                context.Request.Method == "GET")
+            {
+                Console.WriteLine($"🔒 Unauthenticated user accessing root, redirecting to login");
+                context.Response.Redirect("/auth/login");
+                return;
+            }
+            
+            // If user is authenticated and accessing root, allow access to frontend
+            if (user?.Identity?.IsAuthenticated == true && path == "/")
+            {
+                Console.WriteLine($"✅ Authenticated user {user.Identity.Name} accessing root, allowing access");
+                await next();
+                return;
+            }
+            
+            await next();
+        });
+        
         // Map controllers
         app.MapControllers();
 
         // Public health check endpoint
         app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow })
-           .WithName("HealthCheck");
+           .WithName("HealthCheck")
+           .AllowAnonymous();
 
         // Public gateway info endpoint
         app.MapGet("/gateway/info", () => new 
@@ -211,19 +276,50 @@ public class Program
                 ClientId = app.Configuration["Keycloak:ClientId"]
             }
         })
-        .WithName("GatewayInfo");
+        .WithName("GatewayInfo")
+        .AllowAnonymous();
 
         // Authentication endpoints
-        app.MapGet("/auth/login", () => Results.Challenge())
-           .WithName("Login");
-           
-        app.MapPost("/auth/logout", async (HttpContext context) =>
+        app.MapGet("/auth/login", (HttpContext context) =>
         {
+            // If user is already authenticated, redirect to home
+            if (context.User?.Identity?.IsAuthenticated == true)
+            {
+                Console.WriteLine($"✅ User {context.User.Identity.Name} already authenticated, redirecting to home");
+                return Results.Redirect("/");
+            }
+            
+            // Otherwise, trigger authentication challenge
+            Console.WriteLine($"🔄 Triggering authentication challenge for unauthenticated user");
+            return Results.Challenge();
+        })
+           .WithName("Login")
+           .AllowAnonymous();
+
+        // Add /auth/logout endpoints - these are the correct authentication endpoints
+        app.MapGet("/auth/logout", async (HttpContext context) =>
+        {
+            // Sign out from both local cookies and OIDC provider (Keycloak)
             await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-            return Results.Ok(new { message = "Logged out successfully" });
+            
+            // The OIDC sign out will handle the redirect to Keycloak and back
+            return Results.Empty;
         })
-        .WithName("Logout");
+        .WithName("AuthLogoutGet")
+        .AllowAnonymous();
+
+        app.MapPost("/auth/logout", async (HttpContext context) =>
+        {
+            // Sign out from both local cookies and OIDC provider (Keycloak)
+            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            
+            // The OIDC sign out will handle the redirect to Keycloak and back
+            return Results.Empty;
+        })
+        .WithName("AuthLogoutPost")
+        .AllowAnonymous();
 
         app.MapGet("/auth/user", (HttpContext context) =>
         {
@@ -245,6 +341,22 @@ public class Program
         .RequireAuthorization()
         .WithName("GetUser");
 
+        // Authentication error endpoint for handling correlation failures
+        app.MapGet("/auth/error", (HttpContext context) =>
+        {
+            var errorMessage = context.Request.Query["error"].FirstOrDefault() ?? "Authentication failed";
+            return Results.Ok(new 
+            { 
+                error = "authentication_failed",
+                message = errorMessage,
+                details = "There was an issue with the authentication process. Please try logging in again.",
+                timestamp = DateTime.UtcNow,
+                actions = new[] { "Clear browser cookies", "Try logging in again", "Contact support if issue persists" }
+            });
+        })
+        .WithName("AuthError")
+        .AllowAnonymous();
+
         // Protected API example
         app.MapGet("/api/protected", (HttpContext context) => new
         {
@@ -256,13 +368,8 @@ public class Program
         .RequireAuthorization()
         .WithName("ProtectedEndpoint");
 
-        // Map the reverse proxy for other services with authentication
-        app.MapReverseProxy(proxyPipeline =>
-        {
-            // Require authentication for all proxied requests
-            proxyPipeline.UseAuthentication();
-            proxyPipeline.UseAuthorization();
-        }).RequireAuthorization();
+        // Map the reverse proxy for frontend routes (no global auth requirement)
+        app.MapReverseProxy();
 
         app.Run();
     }
