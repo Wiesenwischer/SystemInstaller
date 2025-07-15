@@ -11,8 +11,8 @@
                 <div>
                     <!-- Header -->
                     <div class="login-header">
-                        <h1>Sign In</h1>
-                        <p>Enter your email and password to sign in!</p>
+                        <h1>Sign In to ReadyStackGo</h1>
+                        <p>Enter your credentials to access your deployment platform!</p>
                     </div>
 
                     <!-- Social login buttons -->
@@ -148,12 +148,14 @@
             <!-- Right side - Branding -->
             <div class="login-branding-container">
                 <div class="login-branding-content">
-                    <#if realm.displayName?has_content>
+                    <#if realm.displayName?has_content && realm.displayName != "systeminstaller">
                         <h2>${realm.displayName}</h2>
                     <#else>
-                        <h2>System Installer</h2>
+                        <img src="${url.resourcesPath}/img/readystackgo-logo.svg" alt="ReadyStackGo Logo" style="width: 200px; margin-bottom: 20px;" />
+                        <h2>ReadyStackGo</h2>
                     </#if>
-                    <p>Professional Deployment Management Platform with Modern Authentication</p>
+                    <p class="brand-slogan">Turn your specs into stacks</p>
+                    <p>Professional deployment management platform with modern authentication and multi-tenant capabilities</p>
                 </div>
             </div>
         </div>
