@@ -1,0 +1,43 @@
+<svg width="300" height="80" viewBox="0 0 300 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="80" rx="12" fill="#1E3A8A"/>
+  
+  <!-- Rocket Icon (Left side) -->
+  <g transform="translate(15, 16)">
+    <!-- Rocket body -->
+    <path d="M24 8C26.2091 8 28 9.79086 28 12V36C28 38.2091 26.2091 40 24 40C21.7909 40 20 38.2091 20 36V12C20 9.79086 21.7909 8 24 8Z" fill="#3B82F6"/>
+    
+    <!-- Rocket tip -->
+    <path d="M24 8L28 12H20L24 8Z" fill="#60A5FA"/>
+    
+    <!-- Rocket fins -->
+    <path d="M16 28L20 26V34L16 32V28Z" fill="#2563EB"/>
+    <path d="M32 28L28 26V34L32 32V28Z" fill="#2563EB"/>
+    
+    <!-- Rocket window -->
+    <circle cx="24" cy="18" r="3" fill="#BFDBFE"/>
+    <circle cx="24" cy="18" r="1.5" fill="#EFF6FF"/>
+    
+    <!-- Rocket engine -->
+    <rect x="22" y="40" width="4" height="3" fill="#374151"/>
+    
+    <!-- Flames -->
+    <path d="M20 43L22 48L24 45L26 48L28 43H20Z" fill="#EF4444"/>
+    <path d="M21 43L22 46L24 44L26 46L27 43H21Z" fill="#F59E0B"/>
+    
+    <!-- Stars around rocket -->
+    <circle cx="8" cy="12" r="0.5" fill="#FBBF24"/>
+    <circle cx="40" cy="20" r="0.5" fill="#FBBF24"/>
+    <circle cx="4" cy="28" r="0.5" fill="#FBBF24"/>
+    <circle cx="44" cy="8" r="0.5" fill="#FBBF24"/>
+  </g>
+  
+  <!-- ReadyStackGo Text -->
+  <text x="80" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF">ReadyStackGo</text>
+  
+  <!-- RSGO Text -->
+  <text x="80" y="55" font-family="Arial, sans-serif" font-size="14" font-weight="500" fill="#BFDBFE">RSGO</text>
+  
+  <!-- Slogan -->
+  <text x="80" y="68" font-family="Arial, sans-serif" font-size="10" font-style="italic" fill="#93C5FD">Turn your specs into stacks</text>
+</svg>

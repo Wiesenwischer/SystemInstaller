@@ -27,7 +27,7 @@ Nach dem Start der Container, führe das Setup-Script aus:
 
 Das Script:
 - Erstellt ein "systeminstaller" Realm
-- Konfiguriert den "systeminstaller-web" Client
+- Konfiguriert den "systeminstaller-client" Client
 - Erstellt einen Test-User
 - Zeigt das Client Secret an
 

@@ -148,14 +148,14 @@
             <!-- Right side - Branding -->
             <div class="login-branding-container">
                 <div class="login-branding-content">
-                    <#if realm.displayName?has_content && realm.displayName != "systeminstaller">
-                        <h2>${realm.displayName}</h2>
-                    <#else>
-                        <img src="${url.resourcesPath}/img/readystackgo-logo.svg" alt="ReadyStackGo Logo" style="width: 200px; margin-bottom: 20px;" />
-                        <h2>ReadyStackGo</h2>
-                    </#if>
+                    <div class="rocket-icon">
+                        <img src="${url.resourcesPath}/img/rocket.png" alt="ReadyStackGo Rocket" />
+                    </div>
+                    <h2 class="brand-title">
+                        <span class="ready-text">Ready</span><span class="stack-text">Stack</span><span class="go-text">Go</span>
+                    </h2>
                     <p class="brand-slogan">Turn your specs into stacks</p>
-                    <p>Professional deployment management platform with modern authentication and multi-tenant capabilities</p>
+                    <p class="brand-description">Professional deployment management platform with modern authentication and multi-tenant capabilities</p>
                 </div>
             </div>
         </div>

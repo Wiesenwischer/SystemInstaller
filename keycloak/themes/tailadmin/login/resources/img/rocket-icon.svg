@@ -1,0 +1,32 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rocket body -->
+  <path d="M32 4C36.4183 4 40 7.58172 40 12V36C40 40.4183 36.4183 44 32 44C27.5817 44 24 40.4183 24 36V12C24 7.58172 27.5817 4 32 4Z" fill="#3B82F6"/>
+  
+  <!-- Rocket tip -->
+  <path d="M32 4L38 12H26L32 4Z" fill="#1E3A8A"/>
+  
+  <!-- Rocket fins -->
+  <path d="M20 32L24 28V40L20 36V32Z" fill="#1D4ED8"/>
+  <path d="M44 32L40 28V40L44 36V32Z" fill="#1D4ED8"/>
+  
+  <!-- Rocket window -->
+  <circle cx="32" cy="20" r="4" fill="#BFDBFE"/>
+  <circle cx="32" cy="20" r="2" fill="#EFF6FF"/>
+  
+  <!-- Rocket engine -->
+  <rect x="28" y="44" width="8" height="4" fill="#1F2937"/>
+  
+  <!-- Flames -->
+  <path d="M26 48L30 56L32 52L34 56L38 48H26Z" fill="#EF4444"/>
+  <path d="M28 48L30 54L32 50L34 54L36 48H28Z" fill="#F59E0B"/>
+  
+  <!-- Stars -->
+  <circle cx="12" cy="16" r="1" fill="#FBBF24"/>
+  <circle cx="52" cy="24" r="1" fill="#FBBF24"/>
+  <circle cx="8" cy="32" r="1" fill="#FBBF24"/>
+  <circle cx="56" cy="12" r="1" fill="#FBBF24"/>
+  
+  <!-- Sparkles -->
+  <path d="M16 8L17 10L19 9L17 11L16 8Z" fill="#F3F4F6"/>
+  <path d="M48 40L49 42L51 41L49 43L48 40Z" fill="#F3F4F6"/>
+</svg>

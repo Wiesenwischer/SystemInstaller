@@ -128,7 +128,7 @@ SystemInstaller/
 |----------|--------------|---------|
 | `ConnectionStrings__DefaultConnection` | SQL Server Verbindung | siehe appsettings.json |
 | `Authentication__Keycloak__Authority` | Keycloak Realm URL | http://keycloak:8080/realms/systeminstaller |
-| `Authentication__Keycloak__ClientId` | Keycloak Client ID | systeminstaller-web |
+| `Authentication__Keycloak__ClientId` | Keycloak Client ID | systeminstaller-client |
 | `Authentication__Keycloak__ClientSecret` | Keycloak Client Secret | `your-client-secret` (in realm config) |
 
 ### Ports
