@@ -1,7 +1,12 @@
+using SystemInstaller.SharedKernel;
 using SystemInstaller.Core.Domain.Enums;
 
 namespace SystemInstaller.Core.Domain.Entities;
 
+/// <summary>
+/// Legacy InstallationTask - should be migrated to new domain structure
+/// </summary>
+[Obsolete("Use SystemInstaller.Core.Domain.InstallationManagement.InstallationTask instead")]
 public class InstallationTask : Entity<Guid>
 {
     public string Name { get; private set; } = default!;
