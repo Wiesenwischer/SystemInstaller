@@ -1,6 +1,6 @@
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Core.Domain.InstallationManagement;
+namespace SystemInstaller.Domain.Installations;
 
 /// <summary>
 /// Represents an installation environment where installations can be executed

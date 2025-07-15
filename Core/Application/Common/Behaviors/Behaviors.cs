@@ -2,7 +2,7 @@ using FluentValidation;
 using MediatR;
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Core.Application.Common.Behaviors;
+namespace SystemInstaller.Application.Common.Behaviors;
 
 /// <summary>
 /// Validation behavior for MediatR requests

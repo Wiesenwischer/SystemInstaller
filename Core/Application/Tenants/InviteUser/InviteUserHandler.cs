@@ -1,8 +1,8 @@
 using MediatR;
-using SystemInstaller.Core.Domain.TenantManagement;
+using SystemInstaller.Domain.Tenants;
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Core.Application.TenantManagement.InviteUser;
+namespace SystemInstaller.Application.Tenants.InviteUser;
 
 public class InviteUserCommand : IRequest<InviteUserResult>
 {

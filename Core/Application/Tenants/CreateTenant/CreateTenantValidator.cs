@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace SystemInstaller.Core.Application.TenantManagement.CreateTenant;
+namespace SystemInstaller.Application.Tenants.CreateTenant;
 
 public class CreateTenantValidator : AbstractValidator<CreateTenantCommand>
 {

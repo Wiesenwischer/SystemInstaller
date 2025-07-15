@@ -1,8 +1,8 @@
 using MediatR;
-using SystemInstaller.Core.Domain.InstallationManagement;
+using SystemInstaller.Domain.Installations;
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Core.Application.InstallationManagement.CreateInstallation;
+namespace SystemInstaller.Application.Installations.CreateInstallation;
 
 public class CreateInstallationCommand : IRequest<CreateInstallationResult>
 {

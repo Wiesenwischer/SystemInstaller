@@ -1,10 +1,10 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using SystemInstaller.Core.Application.Common.Behaviors;
+using SystemInstaller.Application.Common.Behaviors;
 using System.Reflection;
 
-namespace SystemInstaller.Core.Application;
+namespace SystemInstaller.Application;
 
 /// <summary>
 /// Dependency injection configuration for the Application layer

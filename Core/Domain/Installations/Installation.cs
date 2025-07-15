@@ -1,6 +1,6 @@
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Core.Domain.InstallationManagement;
+namespace SystemInstaller.Domain.Installations;
 
 /// <summary>
 /// Installation aggregate root - manages the installation lifecycle and tasks

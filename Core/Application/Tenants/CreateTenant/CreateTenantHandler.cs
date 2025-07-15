@@ -1,8 +1,8 @@
 using MediatR;
-using SystemInstaller.Core.Domain.TenantManagement;
+using SystemInstaller.Domain.Tenants;
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Core.Application.TenantManagement.CreateTenant;
+namespace SystemInstaller.Application.Tenants.CreateTenant;
 
 public class CreateTenantCommand : IRequest<CreateTenantResult>
 {

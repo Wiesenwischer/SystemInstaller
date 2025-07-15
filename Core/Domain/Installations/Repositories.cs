@@ -1,6 +1,6 @@
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Core.Domain.InstallationManagement;
+namespace SystemInstaller.Domain.Installations;
 
 /// <summary>
 /// Repository interface for Installation aggregate
