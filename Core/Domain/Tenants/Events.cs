@@ -7,11 +7,11 @@ namespace SystemInstaller.Domain.Tenants;
 /// </summary>
 public class TenantCreatedEvent : DomainEvent
 {
-    public Guid TenantId { get; }
+    public TenantId TenantId { get; }
     public string TenantName { get; }
     public Email ContactEmail { get; }
 
-    public TenantCreatedEvent(Guid tenantId, string tenantName, Email contactEmail)
+    public TenantCreatedEvent(TenantId tenantId, string tenantName, Email contactEmail)
     {
         TenantId = tenantId;
         TenantName = tenantName;
@@ -21,27 +21,29 @@ public class TenantCreatedEvent : DomainEvent
 
 public class TenantUserInvitedEvent : DomainEvent
 {
-    public Guid TenantId { get; }
-    public Guid InvitationId { get; }
+    public TenantId TenantId { get; }
+    public UserInvitationId InvitationId { get; }
     public Email InviteeEmail { get; }
     public PersonName InviteeName { get; }
+    public UserRole InviteeRole { get; }
 
-    public TenantUserInvitedEvent(Guid tenantId, Guid invitationId, Email inviteeEmail, PersonName inviteeName)
+    public TenantUserInvitedEvent(TenantId tenantId, UserInvitationId invitationId, Email inviteeEmail, PersonName inviteeName, UserRole inviteeRole)
     {
         TenantId = tenantId;
         InvitationId = invitationId;
         InviteeEmail = inviteeEmail;
         InviteeName = inviteeName;
+        InviteeRole = inviteeRole;
     }
 }
 
 public class UserInvitationAcceptedEvent : DomainEvent
 {
-    public Guid TenantId { get; }
-    public Guid InvitationId { get; }
+    public TenantId TenantId { get; }
+    public UserInvitationId InvitationId { get; }
     public string UserId { get; }
 
-    public UserInvitationAcceptedEvent(Guid tenantId, Guid invitationId, string userId)
+    public UserInvitationAcceptedEvent(TenantId tenantId, UserInvitationId invitationId, string userId)
     {
         TenantId = tenantId;
         InvitationId = invitationId;

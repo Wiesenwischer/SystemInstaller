@@ -5,7 +5,7 @@ namespace SystemInstaller.Domain.Tenants;
 /// <summary>
 /// Tenant aggregate root - manages tenant lifecycle and user management
 /// </summary>
-public class Tenant : AggregateRoot<Guid>
+public class Tenant : AggregateRoot<TenantId>
 {
     public string Name { get; private set; } = default!;
     public string? Description { get; private set; }
@@ -25,7 +25,7 @@ public class Tenant : AggregateRoot<Guid>
 
     public Tenant(string name, string? description, Email contactEmail)
     {
-        Id = Guid.NewGuid();
+        Id = TenantId.New();
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description;
         ContactEmail = contactEmail ?? throw new ArgumentNullException(nameof(contactEmail));
@@ -60,13 +60,13 @@ public class Tenant : AggregateRoot<Guid>
         var invitation = new UserInvitation(Id, email, name, role, invitedByUserId);
         _userInvitations.Add(invitation);
 
-        AddDomainEvent(new TenantUserInvitedEvent(Id, invitation.Id, email, name));
+        AddDomainEvent(new TenantUserInvitedEvent(Id, invitation.Id, email, name, role));
         IncrementVersion();
 
         return invitation;
     }
 
-    public TenantUser AcceptInvitation(Guid invitationId, string userId)
+    public TenantUser AcceptInvitation(UserInvitationId invitationId, string userId)
     {
         var invitation = _userInvitations.FirstOrDefault(i => i.Id == invitationId);
         if (invitation == null)
@@ -86,7 +86,7 @@ public class Tenant : AggregateRoot<Guid>
         return tenantUser;
     }
 
-    public void RemoveUser(Guid userId)
+    public void RemoveUser(TenantUserId userId)
     {
         var user = _tenantUsers.FirstOrDefault(u => u.Id == userId);
         if (user == null)
@@ -96,7 +96,7 @@ public class Tenant : AggregateRoot<Guid>
         IncrementVersion();
     }
 
-    public void DeactivateUser(Guid userId)
+    public void DeactivateUser(TenantUserId userId)
     {
         var user = _tenantUsers.FirstOrDefault(u => u.Id == userId);
         if (user == null)

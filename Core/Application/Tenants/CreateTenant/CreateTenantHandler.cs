@@ -13,7 +13,7 @@ public class CreateTenantCommand : IRequest<CreateTenantResult>
 
 public class CreateTenantResult
 {
-    public Guid TenantId { get; set; }
+    public TenantId TenantId { get; set; } = default!;
     public string Name { get; set; } = default!;
     public string ContactEmail { get; set; } = default!;
     public DateTime CreatedAt { get; set; }

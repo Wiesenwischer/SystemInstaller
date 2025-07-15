@@ -15,9 +15,9 @@ public enum UserRole
 /// <summary>
 /// Represents a user within a tenant context
 /// </summary>
-public class TenantUser : Entity<Guid>
+public class TenantUser : Entity<TenantUserId>
 {
-    public Guid TenantId { get; private set; }
+    public TenantId TenantId { get; private set; }
     public string UserId { get; private set; } = default!; // From Identity Provider
     public Email Email { get; private set; } = default!;
     public PersonName Name { get; private set; } = default!;
@@ -31,9 +31,9 @@ public class TenantUser : Entity<Guid>
 
     private TenantUser() { } // For EF Core
 
-    internal TenantUser(Guid tenantId, string userId, Email email, PersonName name, UserRole role)
+    internal TenantUser(TenantId tenantId, string userId, Email email, PersonName name, UserRole role)
     {
-        Id = Guid.NewGuid();
+        Id = TenantUserId.New();
         TenantId = tenantId;
         UserId = userId;
         Email = email;

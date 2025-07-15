@@ -5,9 +5,9 @@ namespace SystemInstaller.Domain.Installations;
 /// <summary>
 /// Installation aggregate root - manages the installation lifecycle and tasks
 /// </summary>
-public class Installation : AggregateRoot<Guid>
+public class Installation : AggregateRoot<InstallationId>
 {
-    public Guid EnvironmentId { get; private set; }
+    public InstallationEnvironmentId EnvironmentId { get; private set; } = default!;
     public string ProductVersion { get; private set; } = default!;
     public InstallationStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }

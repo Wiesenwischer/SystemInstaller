@@ -5,9 +5,9 @@ namespace SystemInstaller.Domain.Tenants;
 /// <summary>
 /// Represents a user invitation to join a tenant
 /// </summary>
-public class UserInvitation : Entity<Guid>
+public class UserInvitation : Entity<UserInvitationId>
 {
-    public Guid TenantId { get; private set; }
+    public TenantId TenantId { get; private set; } = default!;
     public Email Email { get; private set; } = default!;
     public PersonName Name { get; private set; } = default!;
     public UserRole Role { get; private set; }
@@ -23,9 +23,9 @@ public class UserInvitation : Entity<Guid>
 
     private UserInvitation() { } // For EF Core
 
-    internal UserInvitation(Guid tenantId, Email email, PersonName name, UserRole role, string invitedByUserId)
+    internal UserInvitation(TenantId tenantId, Email email, PersonName name, UserRole role, string invitedByUserId)
     {
-        Id = Guid.NewGuid();
+        Id = UserInvitationId.New();
         TenantId = tenantId;
         Email = email;
         Name = name;

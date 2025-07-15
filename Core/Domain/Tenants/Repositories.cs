@@ -5,7 +5,7 @@ namespace SystemInstaller.Domain.Tenants;
 /// <summary>
 /// Repository interface for Tenant aggregate
 /// </summary>
-public interface ITenantRepository : IRepository<Tenant, Guid>
+public interface ITenantRepository : IRepository<Tenant, TenantId>
 {
     Task<Tenant?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
     Task<List<Tenant>> GetActiveTenantsAsync(CancellationToken cancellationToken = default);
