@@ -1,7 +1,8 @@
 using SystemInstaller.SharedKernel;
-using SystemInstaller.Domain.Tenants; // For Email and PersonName
+using SystemInstaller.Domain.Tenants.Model; // For Email and PersonName
+using SystemInstaller.Domain.Users.Events;
 
-namespace SystemInstaller.Domain.Users;
+namespace SystemInstaller.Domain.Users.Model;
 
 /// <summary>
 /// User entity - represents a fully registered and verified user
@@ -95,86 +96,5 @@ public class User : AggregateRoot<UserId>
         IncrementVersion();
         
         AddDomainEvent(new UserReactivatedEvent(Id, UpdatedAt.Value));
-    }
-}
-
-/// <summary>
-/// Additional domain events for User entity
-/// </summary>
-public class UserCreatedEvent : DomainEvent
-{
-    public UserId UserId { get; }
-    public Email Email { get; }
-    public PersonName Name { get; }
-    public string ExternalUserId { get; }
-    
-    public UserCreatedEvent(UserId userId, Email email, PersonName name, string externalUserId)
-    {
-        UserId = userId;
-        Email = email;
-        Name = name;
-        ExternalUserId = externalUserId;
-    }
-}
-
-public class UserProfileUpdatedEvent : DomainEvent
-{
-    public UserId UserId { get; }
-    public PersonName Name { get; }
-    
-    public UserProfileUpdatedEvent(UserId userId, PersonName name)
-    {
-        UserId = userId;
-        Name = name;
-    }
-}
-
-public class UserNotificationPreferencesUpdatedEvent : DomainEvent
-{
-    public UserId UserId { get; }
-    public NotificationPreferences Preferences { get; }
-    
-    public UserNotificationPreferencesUpdatedEvent(UserId userId, NotificationPreferences preferences)
-    {
-        UserId = userId;
-        Preferences = preferences;
-    }
-}
-
-public class UserLoginRecordedEvent : DomainEvent
-{
-    public UserId UserId { get; }
-    public DateTime LoginAt { get; }
-    
-    public UserLoginRecordedEvent(UserId userId, DateTime loginAt)
-    {
-        UserId = userId;
-        LoginAt = loginAt;
-    }
-}
-
-public class UserDeactivatedEvent : DomainEvent
-{
-    public UserId UserId { get; }
-    public string Reason { get; }
-    public DateTime DeactivatedAt { get; }
-    
-    public UserDeactivatedEvent(UserId userId, string reason, DateTime deactivatedAt)
-    {
-        UserId = userId;
-        Reason = reason;
-        DeactivatedAt = deactivatedAt;
-    }
-}
-
-public class UserReactivatedEvent : DomainEvent
-{
-    public UserId UserId { get; }
-    public DateTime ReactivatedAt { get; }
-    
-    public UserReactivatedEvent(UserId userId, DateTime reactivatedAt)
-    {
-        UserId = userId;
-        ReactivatedAt = reactivatedAt;
     }
 }

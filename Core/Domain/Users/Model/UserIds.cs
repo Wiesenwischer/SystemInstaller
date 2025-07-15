@@ -1,6 +1,6 @@
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Domain.Users;
+namespace SystemInstaller.Domain.Users.Model;
 
 /// <summary>
 /// Strongly-typed identifier for UserRegistration aggregate

@@ -1,7 +1,8 @@
 using SystemInstaller.SharedKernel;
-using SystemInstaller.Domain.Tenants; // For Email
+using SystemInstaller.Domain.Tenants.Model; // For Email
+using SystemInstaller.Domain.Users.Model;
 
-namespace SystemInstaller.Domain.Users;
+namespace SystemInstaller.Domain.Users.Repositories;
 
 /// <summary>
 /// Repository interface for UserRegistration aggregate

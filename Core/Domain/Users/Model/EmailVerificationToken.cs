@@ -1,20 +1,6 @@
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Domain.Users;
-
-/// <summary>
-/// Registration status enumeration
-/// </summary>
-public enum RegistrationStatus
-{
-    Pending,           // Initial state - registration requested
-    EmailSent,         // Verification email sent
-    EmailVerified,     // User clicked verification link
-    ExternalUserCreated, // User created in Keycloak
-    Completed,         // Registration fully completed
-    Cancelled,         // Registration cancelled
-    Expired            // Verification token expired
-}
+namespace SystemInstaller.Domain.Users.Model;
 
 /// <summary>
 /// Email verification token value object
@@ -61,34 +47,5 @@ public class EmailVerificationToken : ValueObject
     {
         yield return Token;
         yield return ExpiresAt;
-    }
-}
-
-/// <summary>
-/// User preference for receiving notifications
-/// </summary>
-public class NotificationPreferences : ValueObject
-{
-    public bool EmailNotifications { get; }
-    public bool InstallationUpdates { get; }
-    public bool SystemMaintenance { get; }
-    
-    public NotificationPreferences(
-        bool emailNotifications = true, 
-        bool installationUpdates = true, 
-        bool systemMaintenance = true)
-    {
-        EmailNotifications = emailNotifications;
-        InstallationUpdates = installationUpdates;
-        SystemMaintenance = systemMaintenance;
-    }
-    
-    public static NotificationPreferences Default() => new();
-    
-    protected override IEnumerable<object?> GetEqualityComponents()
-    {
-        yield return EmailNotifications;
-        yield return InstallationUpdates;
-        yield return SystemMaintenance;
     }
 }

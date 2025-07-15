@@ -1,6 +1,7 @@
 using SystemInstaller.SharedKernel;
+using SystemInstaller.Domain.Tenants.Events;
 
-namespace SystemInstaller.Domain.Tenants;
+namespace SystemInstaller.Domain.Tenants.Model;
 
 /// <summary>
 /// Tenant aggregate root - manages tenant lifecycle and user management

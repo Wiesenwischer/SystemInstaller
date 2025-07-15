@@ -6,20 +6,90 @@ This document outlines the domain design principles and patterns used in the Sys
 
 ## Domain Structure
 
-### Aggregate Organization
+### Business-First Organization Principle
 
-Our domain is organized by **aggregates** rather than technical classifications:
+Our domain follows a **business-first** organizational structure, avoiding the mixing of business concepts with technical artifact types at the same hierarchy level. This ensures consistency and clarity in our domain model.
+
+#### ✅ Business-First Structure
 
 ```
 Core/Domain/
-├── Tenants/          # Tenant aggregate and related entities
-├── Installations/    # Installation aggregate and related entities
-└── ...               # Other aggregates as they emerge
+├── Tenants/                    # Business concept
+│   ├── Model/                 # Domain model artifacts
+│   │   ├── Tenant.cs         # Aggregate root
+│   │   ├── TenantUser.cs     # Entity
+│   │   ├── UserInvitation.cs # Entity
+│   │   ├── TenantIds.cs      # All IDs for this aggregate
+│   │   ├── Email.cs          # Value object
+│   │   └── PersonName.cs     # Value object
+│   ├── Events/               # Domain events
+│   │   ├── TenantCreatedEvent.cs
+│   │   ├── TenantUserInvitedEvent.cs
+│   │   └── UserInvitationAcceptedEvent.cs
+│   └── Repositories/         # Repository interfaces
+│       └── ITenantRepository.cs
+├── Users/                     # Business concept
+│   ├── Model/                # Domain model artifacts
+│   │   ├── User.cs          # Aggregate root
+│   │   ├── UserRegistration.cs # Aggregate root
+│   │   ├── UserIds.cs       # All IDs for this aggregate
+│   │   ├── RegistrationStatus.cs # Enum
+│   │   ├── EmailVerificationToken.cs # Value object
+│   │   └── NotificationPreferences.cs # Value object
+│   ├── Events/              # Domain events
+│   │   ├── UserRegistrationRequestedEvent.cs
+│   │   ├── EmailVerificationRequestedEvent.cs
+│   │   ├── UserCreatedEvent.cs
+│   │   └── ... (other events)
+│   └── Repositories/        # Repository interfaces
+│       └── IUserRepository.cs
+└── Installations/           # Business concept
+    ├── Model/              # Domain model artifacts
+    ├── Events/             # Domain events
+    └── Repositories/       # Repository interfaces
 ```
+
+#### ❌ Avoid Technical-First Mixing
+
+```
+Core/Domain/
+├── Tenants/          # Business concept
+├── Events/           # Technical artifact type - MIXED!
+├── Commands/         # Technical artifact type - MIXED!
+└── ValueObjects/     # Technical artifact type - MIXED!
+```
+
+### Design Principles
+
+1. **Consistency**: Every leaf folder contains the same type of artifact
+2. **Business Alignment**: Top-level folders represent business concepts
+3. **Technical Grouping**: Technical artifacts are grouped under business concepts
+4. **Discoverability**: Related artifacts are co-located under their business context
+5. **Maintainability**: Changes to business concepts are contained within their folder
+
+### Individual Value Object Files
+
+Each value object has its own file rather than being grouped in a single file:
+
+```
+/Model
+├── Email.cs                    # Individual value object
+├── PersonName.cs               # Individual value object
+├── NotificationPreferences.cs  # Individual value object
+└── EmailVerificationToken.cs   # Individual value object
+```
+
+**Benefits:**
+- **Single Responsibility**: Each file handles one concept
+- **Easier Navigation**: Clear file-to-concept mapping
+- **Better Maintainability**: Changes don't affect unrelated concepts
+- **Reduced Merge Conflicts**: Multiple developers can work on different value objects
 
 ### Namespace Structure
 
-- **Domain Layer**: `SystemInstaller.Domain.{Aggregate}`
+- **Domain Models**: `SystemInstaller.Domain.{Aggregate}.Model`
+- **Domain Events**: `SystemInstaller.Domain.{Aggregate}.Events`
+- **Domain Repositories**: `SystemInstaller.Domain.{Aggregate}.Repositories`
 - **Application Layer**: `SystemInstaller.Application.{Aggregate}`
 - **Shared Kernel**: `SystemInstaller.SharedKernel`
 
@@ -137,68 +207,185 @@ public class Tenant : AggregateRoot<TenantId>
 }
 ```
 
-## Aggregate Design Principles
+## Current Domain Overview
 
-### 1. Tenant Aggregate
-**Responsibility**: Manages tenant lifecycle and user management within the tenant context.
+### Tenants Aggregate
 
-**Entities**:
-- `Tenant` (Root)
-- `TenantUser` 
-- `UserInvitation`
+**Purpose**: Manages organizational boundaries and user management within tenant contexts.
 
-**Value Objects**:
-- `TenantId`
-- `TenantUserId`
-- `UserInvitationId`
-- `Email`
-- `PersonName`
+**Namespace**: `SystemInstaller.Domain.Tenants`
+
+**Model Components**:
+- **`Tenant`** (Aggregate Root) - Main tenant entity with business logic
+- **`TenantUser`** (Entity) - Users within a tenant context
+- **`UserInvitation`** (Entity) - Pending user invitations
+- **`TenantId`**, **`TenantUserId`**, **`UserInvitationId`** (IDs) - Strongly-typed identifiers
+- **`Email`** (Value Object) - Email address with validation
+- **`PersonName`** (Value Object) - First and last name combination
+- **`UserRole`** (Enum) - Admin, User, ReadOnly
+
+**Domain Events**:
+- `TenantCreatedEvent` - Raised when tenant is created
+- `TenantUserInvitedEvent` - Raised when user is invited
+- `UserInvitationAcceptedEvent` - Raised when invitation is accepted
 
 **Business Rules**:
+- Tenant names must be unique
 - Cannot invite user if already exists in tenant
 - Cannot have multiple pending invitations for same email
 - Only active tenants can invite users
 
-### 2. Installation Aggregate
-**Responsibility**: Manages installation lifecycle and task execution.
+### Users Aggregate
 
-**Entities**:
-- `Installation` (Root)
-- `InstallationTask`
-- `InstallationEnvironment`
+**Purpose**: Manages user registration and lifecycle in the system.
 
-**Value Objects**:
-- `InstallationId`
-- `InstallationTaskId`
-- `InstallationEnvironmentId`
+**Namespace**: `SystemInstaller.Domain.Users`
+
+**Model Components**:
+- **`UserRegistration`** (Aggregate Root) - Manages 6-step registration process
+- **`User`** (Aggregate Root) - Verified and active users
+- **`UserRegistrationId`**, **`UserId`** (IDs) - Strongly-typed identifiers
+- **`RegistrationStatus`** (Enum) - Pending, EmailSent, EmailVerified, etc.
+- **`EmailVerificationToken`** (Value Object) - Secure token for email verification
+- **`NotificationPreferences`** (Value Object) - User notification settings
+
+**Domain Events**:
+- `UserRegistrationRequestedEvent` - User starts registration
+- `EmailVerificationRequestedEvent` - Verification email needs to be sent
+- `EmailVerifiedEvent` - User verified their email
+- `ExternalUserCreatedEvent` - User created in external system (Keycloak)
+- `UserRegistrationCompletedEvent` - Registration fully completed
+- `UserCreatedEvent` - Active user entity created
+
+**Business Rules**:
+- Email must be unique per registration
+- Registration follows 6-step process: Pending → EmailSent → EmailVerified → ExternalUserCreated → Completed
+- Verification tokens expire after 24 hours
+- Maximum 5 verification attempts allowed
+- Only verified users can be converted to active users
+
+### Installations Aggregate
+
+**Purpose**: Manages software installation processes and their execution.
+
+**Namespace**: `SystemInstaller.Domain.Installations`
+
+**Model Components**:
+- **`Installation`** (Aggregate Root) - Main installation entity
+- **`InstallationTask`** (Entity) - Individual tasks within installation
+- **`InstallationEnvironment`** (Entity) - Environment context for installation
+- **`InstallationId`**, **`InstallationTaskId`**, **`InstallationEnvironmentId`** (IDs) - Strongly-typed identifiers
 
 **Business Rules**:
 - Installation tasks must be executed in sequence
 - Cannot start installation if environment is not ready
 - Installation status must progress through valid state transitions
 
-## Repository Patterns
+### Cross-Aggregate Relationships
 
-Repositories are defined within the aggregate namespace and use strongly-typed IDs:
+```mermaid
+graph LR
+    T[Tenant] --> U[User]
+    T --> I[Installation]
+    U --> I
+    
+    T -.-> UR[UserRegistration]
+    UR --> U
+    
+    subgraph "Tenant Context"
+        T
+        TU[TenantUser]
+        UI[UserInvitation]
+    end
+    
+    subgraph "User Context"
+        U
+        UR
+    end
+    
+    subgraph "Installation Context"
+        I
+        IT[InstallationTask]
+        IE[InstallationEnvironment]
+    end
+```
+
+**Key Principles**:
+- **Loose Coupling**: Aggregates reference each other via IDs, not direct references
+- **Eventual Consistency**: Cross-aggregate operations use domain events
+- **Bounded Contexts**: Each aggregate owns its data and business rules
+## Aggregate Design Principles
+
+### Aggregate Boundaries
+
+Each aggregate is designed with the following considerations:
+
+**1. Business Invariants**: Each aggregate enforces its own business rules and invariants
+**2. Transaction Boundaries**: All operations within an aggregate are atomic
+**3. Consistency Boundaries**: Strong consistency within aggregate, eventual consistency between aggregates
+**4. Size Optimization**: Aggregates are kept small to minimize locking and improve performance
+
+### Repository Patterns
+
+Repositories are defined within each aggregate's namespace using strongly-typed IDs:
 
 ```csharp
+// In Tenants domain
+namespace SystemInstaller.Domain.Tenants.Repositories;
+
 public interface ITenantRepository : IRepository<Tenant, TenantId>
 {
     Task<bool> ExistsAsync(string name, CancellationToken cancellationToken = default);
     Task<Tenant?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
+    Task<List<Tenant>> GetActiveTenantsAsync(CancellationToken cancellationToken = default);
+}
+
+// In Users domain
+namespace SystemInstaller.Domain.Users.Repositories;
+
+public interface IUserRegistrationRepository : IRepository<UserRegistration, UserRegistrationId>
+{
+    Task<UserRegistration?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default);
+    Task<UserRegistration?> GetByVerificationTokenAsync(string token, CancellationToken cancellationToken = default);
+    Task<List<UserRegistration>> GetExpiredRegistrationsAsync(CancellationToken cancellationToken = default);
 }
 ```
 
 ## Domain Events
 
-Domain events are raised by aggregates when significant business events occur:
+Domain events are organized by aggregate and placed in individual files within the `Events` folder:
 
+```
+/Domain/Tenants/Events/
+├── TenantCreatedEvent.cs
+├── TenantUserInvitedEvent.cs
+└── UserInvitationAcceptedEvent.cs
+
+/Domain/Users/Events/
+├── UserRegistrationRequestedEvent.cs
+├── EmailVerificationRequestedEvent.cs
+├── EmailVerifiedEvent.cs
+├── ExternalUserCreatedEvent.cs
+├── UserRegistrationCompletedEvent.cs
+└── UserCreatedEvent.cs
+```
+
+**Event Structure Example**:
 ```csharp
+namespace SystemInstaller.Domain.Tenants.Events;
+
 public class TenantCreatedEvent : DomainEvent
 {
     public TenantId TenantId { get; }
-    public string Name { get; }
+    public string TenantName { get; }
     public Email ContactEmail { get; }
+    
+    public TenantCreatedEvent(TenantId tenantId, string tenantName, Email contactEmail)
+    {
+        TenantId = tenantId;
+        TenantName = tenantName;
+        ContactEmail = contactEmail;
+    }
 }
 ```
 
@@ -394,35 +581,104 @@ public class TenantId : ValueObject
 **Best Practices:**
 1. **Keep shared kernel minimal** - Only truly shared concepts
 2. **Duplicate when in doubt** - Better than tight coupling
-## Best Practices
+## Complete Domain Structure Overview
 
-### Domain Design
-1. **Keep aggregates small** - Focus on business invariants
-2. **Use strongly-typed IDs** - Avoid primitive obsession
-3. **Apply composite ID heuristics** - Only when truly needed
-4. **Encapsulate business rules** - Within the aggregate
-5. **Raise domain events** - For significant business events
-6. **Use value objects** - For concepts without identity
-7. **Follow ubiquitous language** - Use domain terms consistently
+### Full Project Structure
 
-### Event Design
-8. **Domain events use domain types** - `TenantId`, `UserId`, etc.
-9. **Integration events use primitives** - `Guid`, `string`, etc.
-10. **Translate at boundaries** - Domain → Integration events
-11. **Keep contexts decoupled** - Don't share specific ID types
+```
+SystemInstaller/
+├── Core/
+│   ├── Domain/
+│   │   ├── Tenants/
+│   │   │   ├── Model/
+│   │   │   │   ├── Tenant.cs                    # Aggregate root
+│   │   │   │   ├── TenantUser.cs                # Entity
+│   │   │   │   ├── UserInvitation.cs            # Entity
+│   │   │   │   ├── TenantIds.cs                 # All tenant-related IDs
+│   │   │   │   ├── Email.cs                     # Value object
+│   │   │   │   └── PersonName.cs                # Value object
+│   │   │   ├── Events/
+│   │   │   │   ├── TenantCreatedEvent.cs
+│   │   │   │   ├── TenantUserInvitedEvent.cs
+│   │   │   │   └── UserInvitationAcceptedEvent.cs
+│   │   │   └── Repositories/
+│   │   │       └── ITenantRepository.cs
+│   │   ├── Users/
+│   │   │   ├── Model/
+│   │   │   │   ├── User.cs                      # Aggregate root
+│   │   │   │   ├── UserRegistration.cs          # Aggregate root
+│   │   │   │   ├── UserIds.cs                   # All user-related IDs
+│   │   │   │   ├── RegistrationStatus.cs        # Enum
+│   │   │   │   ├── EmailVerificationToken.cs    # Value object
+│   │   │   │   └── NotificationPreferences.cs   # Value object
+│   │   │   ├── Events/
+│   │   │   │   ├── UserRegistrationRequestedEvent.cs
+│   │   │   │   ├── EmailVerificationRequestedEvent.cs
+│   │   │   │   ├── EmailVerifiedEvent.cs
+│   │   │   │   ├── ExternalUserCreatedEvent.cs
+│   │   │   │   ├── UserRegistrationCompletedEvent.cs
+│   │   │   │   ├── UserCreatedEvent.cs
+│   │   │   │   └── ... (other user events)
+│   │   │   └── Repositories/
+│   │   │       └── IUserRepository.cs
+│   │   └── Installations/
+│   │       ├── Model/
+│   │       │   ├── Installation.cs              # Aggregate root
+│   │       │   ├── InstallationTask.cs          # Entity
+│   │       │   ├── InstallationEnvironment.cs   # Entity
+│   │       │   └── InstallationIds.cs           # All installation-related IDs
+│   │       ├── Events/
+│   │       │   └── ... (installation events)
+│   │       └── Repositories/
+│   │           └── IInstallationRepository.cs
+│   ├── Application/
+│   │   ├── Tenants/
+│   │   │   └── CreateTenant/
+│   │   │       ├── CreateTenantHandler.cs
+│   │   │       └── README.md                    # Use case documentation
+│   │   ├── Users/
+│   │   │   ├── RequestRegistration/
+│   │   │   ├── SendVerificationEmail/
+│   │   │   ├── VerifyEmail/
+│   │   │   └── CompleteRegistration/
+│   │   └── Installations/
+│   │       └── ... (installation use cases)
+│   └── SystemInstaller.Core.csproj
+├── SharedKernel/
+│   ├── Entity.cs                                # Base entity class
+│   ├── AggregateRoot.cs                         # Base aggregate root
+│   ├── ValueObject.cs                           # Base value object
+│   ├── Identity.cs                              # Base identity class
+│   ├── CompositeIdentity.cs                     # Base composite identity
+│   ├── DomainEvent.cs                           # Base domain event
+│   └── Interfaces.cs                            # Common interfaces
+├── Infrastructure/
+│   ├── Persistence/
+│   │   ├── Configurations/
+│   │   │   ├── TenantConfiguration.cs           # EF Core configuration
+│   │   │   └── UserConfiguration.cs             # EF Core configuration
+│   │   └── SystemInstallerDbContext.cs
+│   └── ... (other infrastructure)
+└── SystemInstaller.sln
+```
 
-### Cross-Context Design
-12. **IDs are context-specific** - Same ID, different meaning
-13. **In origin context** - ID is identity
-14. **In other contexts** - ID is value object reference
-15. **Avoid shared ID types** - Between bounded contexts
-16. **Use primitive types** - For integration contracts
+### Key Organizational Principles
 
-### Implementation
-17. **Create EF Core converters** - For strongly-typed IDs
-18. **Map value objects properly** - Using owned entity types
-19. **Use implicit operators** - For convenient conversions
-20. **Document aggregate boundaries** - And their responsibilities
+1. **Business-First Hierarchy**: Top-level folders represent business concepts
+2. **Consistent Leaf Structure**: Every aggregate follows the same Model/Events/Repositories pattern
+3. **Individual Files**: Each domain concept gets its own file
+4. **Clear Boundaries**: Aggregates are self-contained with their own namespace
+5. **Shared Kernel**: Common DDD patterns are shared via SharedKernel
+6. **Use Case Documentation**: Each important use case has its own README
+
+### Benefits of This Structure
+
+- **Navigability**: Easy to find related concepts
+- **Maintainability**: Changes are contained within business boundaries
+- **Scalability**: New aggregates follow the same pattern
+- **Team Collaboration**: Multiple developers can work on different aggregates
+- **Clear Boundaries**: Business concepts are clearly separated
+- **Consistency**: Same organizational pattern across the entire domain
 
 ## Migration Strategy
 
@@ -436,3 +692,40 @@ When introducing strongly-typed IDs to existing code:
 6. Update API contracts (if needed)
 
 This ensures type safety while maintaining database compatibility.
+
+## Best Practices
+
+### Domain Design
+1. **Keep aggregates small** - Focus on business invariants
+2. **Use strongly-typed IDs** - Avoid primitive obsession
+3. **Apply composite ID heuristics** - Only when truly needed
+4. **Encapsulate business rules** - Within the aggregate
+5. **Raise domain events** - For significant business events
+6. **Use value objects** - For concepts without identity
+7. **Follow ubiquitous language** - Use domain terms consistently
+8. **Individual files for concepts** - Each value object, event, and entity gets its own file
+
+### Event Design
+9. **Domain events use domain types** - `TenantId`, `UserId`, etc.
+10. **Integration events use primitives** - `Guid`, `string`, etc.
+11. **Translate at boundaries** - Domain → Integration events
+12. **Keep contexts decoupled** - Don't share specific ID types
+
+### Organizational Design
+13. **Business-first structure** - Organize by business concepts, not technical types
+14. **Consistent folder patterns** - Model/Events/Repositories for each aggregate
+15. **Clear namespace hierarchy** - Reflects folder structure
+16. **Document use cases** - Important use cases get their own README
+
+### Cross-Context Design
+17. **IDs are context-specific** - Same ID, different meaning
+18. **In origin context** - ID is identity
+19. **In other contexts** - ID is value object reference
+20. **Avoid shared ID types** - Between bounded contexts
+21. **Use primitive types** - For integration contracts
+
+### Implementation
+22. **Create EF Core converters** - For strongly-typed IDs
+23. **Map value objects properly** - Using owned entity types
+24. **Use implicit operators** - For convenient conversions
+25. **Document aggregate boundaries** - And their responsibilities

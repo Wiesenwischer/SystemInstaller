@@ -1,6 +1,6 @@
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Domain.Tenants;
+namespace SystemInstaller.Domain.Tenants.Model;
 
 /// <summary>
 /// Represents an email address value object

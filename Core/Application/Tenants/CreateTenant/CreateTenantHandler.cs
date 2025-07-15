@@ -1,5 +1,6 @@
 using MediatR;
-using SystemInstaller.Domain.Tenants;
+using SystemInstaller.Domain.Tenants.Model;
+using SystemInstaller.Domain.Tenants.Repositories;
 using SystemInstaller.SharedKernel;
 
 namespace SystemInstaller.Application.Tenants.CreateTenant;

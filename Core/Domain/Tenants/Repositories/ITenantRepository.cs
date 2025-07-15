@@ -1,6 +1,7 @@
 using SystemInstaller.SharedKernel;
+using SystemInstaller.Domain.Tenants.Model;
 
-namespace SystemInstaller.Domain.Tenants;
+namespace SystemInstaller.Domain.Tenants.Repositories;
 
 /// <summary>
 /// Repository interface for Tenant aggregate

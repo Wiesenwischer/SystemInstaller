@@ -1,7 +1,8 @@
 using SystemInstaller.SharedKernel;
-using SystemInstaller.Domain.Tenants; // For Email and PersonName
+using SystemInstaller.Domain.Tenants.Model; // For Email and PersonName
+using SystemInstaller.Domain.Users.Events;
 
-namespace SystemInstaller.Domain.Users;
+namespace SystemInstaller.Domain.Users.Model;
 
 /// <summary>
 /// UserRegistration aggregate root - manages the complete user sign-up lifecycle

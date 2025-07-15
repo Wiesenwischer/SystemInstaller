@@ -1,6 +1,6 @@
 using SystemInstaller.SharedKernel;
 
-namespace SystemInstaller.Domain.Tenants;
+namespace SystemInstaller.Domain.Tenants.Model;
 
 /// <summary>
 /// Represents a user invitation to join a tenant
